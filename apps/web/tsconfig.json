@@ -26,6 +26,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@/convex/*": [
+        "../../packages/backend/convex/*"
       ]
     }
   },

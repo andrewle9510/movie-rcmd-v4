@@ -12,6 +12,8 @@ Use `@/openspec/AGENTS.md` to learn:
 - How to create and apply change proposals
 - Spec format and conventions
 - Project structure and guidelines
+- Naming conventions: `@/docs/naming-conventions.md`
+- Setup environments: `@/docs/environment-setup.md`
 
 Keep this managed block so 'openspec update' can refresh the instructions.
 
