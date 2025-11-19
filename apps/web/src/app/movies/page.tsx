@@ -6,6 +6,7 @@ import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useMovies } from "@/hooks/use-movies";
 import { Input, Button, Badge } from "@/components/ui-simple";
+import { UIConfig } from "@/config/ui-config";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -39,7 +40,7 @@ export default function MoviesPage() {
       return {
         ...baseStyles,
         gridTemplateColumns: "1fr",
-        gap: "1rem"
+        gap: UIConfig.grid.gap.medium
       };
     }
     
@@ -47,28 +48,28 @@ export default function MoviesPage() {
       case "small":
         return {
           ...baseStyles,
-          gap: "1rem",
-          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))"
+          gap: UIConfig.grid.gap.small,
+          gridTemplateColumns: `repeat(auto-fill, minmax(${UIConfig.grid.minColumnWidth.small}, 1fr))`
         };
       case "large":
         return {
           ...baseStyles,
-          gap: "1.5rem",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))"
+          gap: UIConfig.grid.gap.large,
+          gridTemplateColumns: `repeat(auto-fill, minmax(${UIConfig.grid.minColumnWidth.large}, 1fr))`
         };
       default:
         return {
           ...baseStyles,
-          gap: "1.5rem",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))"
+          gap: UIConfig.grid.gap.medium,
+          gridTemplateColumns: `repeat(auto-fill, minmax(${UIConfig.grid.minColumnWidth.medium}, 1fr))`
         };
     }
   };
 
   const getContainerStyles = () => ({
-    maxWidth: "1200px",
+    maxWidth: UIConfig.layout.containerMaxWidth,
     margin: "0 auto",
-    padding: "2rem 1rem"
+    padding: UIConfig.layout.pagePadding
   });
 
   const getHeaderStyles = () => ({
