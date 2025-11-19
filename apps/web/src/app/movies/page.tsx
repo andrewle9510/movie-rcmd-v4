@@ -29,18 +29,39 @@ export default function MoviesPage() {
     }
   };
 
-  const getGridClassName = () => {
+  const getGridStyles = () => {
+    const baseStyles = {
+      display: "grid",
+      width: "100%"
+    };
+
     if (viewMode === "list") {
-      return "grid grid-cols-1 gap-4";
+      return {
+        ...baseStyles,
+        gridTemplateColumns: "1fr",
+        gap: "1rem"
+      };
     }
     
     switch (gridSize) {
       case "small":
-        return "grid gap-4 grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]";
+        return {
+          ...baseStyles,
+          gap: "1rem",
+          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))"
+        };
       case "large":
-        return "grid gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]";
+        return {
+          ...baseStyles,
+          gap: "1.5rem",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))"
+        };
       default:
-        return "grid gap-6 grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]";
+        return {
+          ...baseStyles,
+          gap: "1.5rem",
+          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))"
+        };
     }
   };
 
@@ -172,7 +193,7 @@ export default function MoviesPage() {
         </div>
       ) : paginatedMovies.length > 0 ? (
         <>
-          <div className={getGridClassName()}>
+          <div style={getGridStyles()}>
             {paginatedMovies.map((movie) => (
               <MovieCard 
                 key={movie._id} 
