@@ -1,7 +1,6 @@
 import Image from "next/image";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { Movie } from "@/types/movie";
+import { MovieCardSkeleton } from "./movie-card-skeleton";
 
 export type GridSize = "small" | "medium" | "large";
 
@@ -9,156 +8,250 @@ interface MovieCardProps {
   movie: Movie;
   gridSize?: GridSize;
   viewMode?: "grid" | "list";
+  onAddToWatchlist?: (movieId: string) => void;
 }
 
-export function MovieCard({ movie, gridSize = "medium", viewMode = "grid" }: MovieCardProps) {
-  const getCardClasses = () => {
+export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAddToWatchlist }: MovieCardProps) {
+  const getCardStyles = () => {
+    const baseStyles = {
+      border: "1px solid #e5e7eb",
+      borderRadius: "0.5rem", 
+      overflow: "hidden",
+      transition: "box-shadow 0.3s ease",
+      cursor: "pointer"
+    } as React.CSSProperties;
+    
     if (viewMode === "list") {
-      return "flex flex-row overflow-hidden transition-shadow hover:shadow-lg";
+      return {
+        ...baseStyles,
+        display: "flex",
+        flexDirection: "row" as const,
+        marginBottom: "1rem",
+        maxWidth: "100%"
+      };
     }
     
-    switch (gridSize) {
-      case "small":
-        return "overflow-hidden transition-shadow hover:shadow-lg";
-      case "large":
-        return "overflow-hidden transition-shadow hover:shadow-lg";
-      default:
-        return "overflow-hidden transition-shadow hover:shadow-lg";
+    // Update movie card to have flexible, viewport-based dimensions
+    if (viewMode === "grid") {
+       return {
+         ...baseStyles,
+         width: "100%"
+       };
     }
+    
+    return baseStyles;
   };
 
-  const getImageContainerClasses = () => {
+  const getImageContainerStyles = () => {
     if (viewMode === "list") {
-      return "relative w-24 h-36 flex-shrink-0 overflow-hidden";
+      return {
+        position: "relative" as const,
+        width: "6rem",
+        height: "9rem",
+        flexShrink: 0,
+        overflow: "hidden"
+      };
     }
     
-    switch (gridSize) {
-      case "small":
-        return "relative aspect-[2/3] overflow-hidden";
-      case "large":
-        return "relative aspect-[2/3] overflow-hidden";
-      default:
-        return "relative aspect-[2/3] overflow-hidden";
-    }
+    return {
+      position: "relative" as const,
+      width: "100%",
+      paddingTop: "150%", // 2/3 aspect ratio (standard movie poster)
+      overflow: "hidden"
+    };
   };
 
-  const getImageSizes = () => {
-    if (viewMode === "list") {
-      return "96px";
-    }
-    
-    switch (gridSize) {
-      case "small":
-        return "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw";
-      case "large":
-        return "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw";
-      default:
-        return "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw";
-    }
-  };
+  const getImageStyles = () => ({
+    objectFit: "cover" as const,
+    transition: "transform 0.3s ease",
+    width: "100%",
+    height: "100%"
+  });
 
   const renderCardContent = () => {
     const commonInfo = (
-      <>
-        <h3 className={`font-semibold leading-tight line-clamp-2 ${
-          viewMode === "list" ? "text-base mb-1" : 
-          gridSize === "small" ? "text-sm mb-1" : 
-          gridSize === "large" ? "text-xl mb-3" : 
-          "text-lg mb-2"
-        }`}>
+      <div style={{ 
+        padding: gridSize === "small" ? "0.5rem" : gridSize === "large" ? "1.5rem" : "1rem" 
+      }}>
+        <h3 style={{ 
+          fontWeight: "bold",
+          lineHeight: "1.25",
+          marginBottom: "0.5rem",
+          fontSize: viewMode === "list" ? "1rem" : 
+                   gridSize === "small" ? "0.875rem" : 
+                   gridSize === "large" ? "1.25rem" : 
+                   "1.125rem",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical" as const,
+          overflow: "hidden"
+        }}>
           {movie.title}
         </h3>
         
         {gridSize !== "small" && viewMode === "grid" && (
-          <p className={`text-gray-600 line-clamp-3 ${
-            gridSize === "large" ? "text-sm mb-3" : "text-sm mb-3"
-          }`}>
-            {movie.description}
-          </p>
-        )}
-
-        {viewMode === "list" && (
-          <p className="text-sm text-gray-600 line-clamp-3 mb-3">
+          <p style={{ 
+            color: "#6b7280",
+            fontSize: "0.875rem",
+            marginBottom: "0.75rem",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical" as const,
+            overflow: "hidden"
+          }}>
             {movie.description}
           </p>
         )}
         
-        <div className={`flex flex-wrap gap-1 ${
-          viewMode === "list" ? "mb-2" : 
-          gridSize === "small" ? "mb-2" : "mb-2"
-        }`}>
+        {viewMode === "list" && (
+          <p style={{ 
+            fontSize: "0.875rem",
+            color: "#6b7280",
+            marginBottom: "0.75rem",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical" as const,
+            overflow: "hidden"
+          }}>
+            {movie.description}
+          </p>
+        )}
+        
+        <div style={{ 
+          display: "flex", 
+          flexWrap: "wrap" as const,
+          gap: "0.25rem",
+          marginBottom: "0.75rem"
+        }}>
           {(viewMode === "list" 
             ? movie.genres.slice(0, 5)
             : movie.genres.slice(0, gridSize === "small" ? 2 : 3)
-          ).map((genre) => (
-            <Badge 
-              key={genre} 
-              variant="secondary" 
-              className={`${
-                gridSize === "small" ? "text-xs" : "text-xs"
-              }`}
+          ).map((genre, index) => (
+            <span 
+              key={index}
+              style={{
+                backgroundColor: "#f3f4f6",
+                color: "#374151",
+                padding: "0.125rem 0.5rem",
+                borderRadius: "9999px",
+                fontSize: "0.75rem",
+                display: "inline-block"
+              }}
             >
               {genre}
-            </Badge>
+            </span>
           ))}
         </div>
         
-        <div className={`flex items-center justify-between ${
-          viewMode === "list" ? "text-xs" : gridSize === "small" ? "text-xs" : "text-xs"
-        } text-gray-500`}>
-          <span>{new Date(movie.releaseDate).getFullYear()}</span>
+        <div style={{ 
+            display: "flex", 
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: viewMode === "list" || gridSize === "small" ? "0.75rem" : "0.875rem",
+            fontSize: viewMode === "list" || gridSize === "small" ? "calc(12px + 0.4vw)" : gridSize === "large" ? "calc(14px + 0.4vw)" : "calc(10px + 0.4vw)"
+          }}>
+            <span style={{ color: "#6b7280" }}>
+              {new Date(movie.releaseDate).getFullYear()}
+            </span>
           {movie.rating && (
-            <span className="flex items-center">
+            <span style={{ 
+              color: "#d97706",
+              fontWeight: "500",
+              display: "flex",
+              alignItems: "center"
+            }}>
               ⭐ {movie.rating.toFixed(1)}
             </span>
           )}
         </div>
         
         {movie.duration && (
-          <div className={`mt-1 text-xs text-gray-500 ${
-            viewMode === "list" || gridSize === "small" ? "" : ""
-          }`}>
-            {Math.floor(movie.duration / 60)}h {movie.duration % 60}m
+          <div style={{ 
+            fontSize: "0.75rem", 
+            color: "#6b7280",
+            marginBottom: "0.5rem",
+            display: "flex",
+            alignItems: "center"
+          }}>
+            🕐 {Math.floor(movie.duration / 60)}h {movie.duration % 60}m
           </div>
         )}
-      </>
+        
+        {(gridSize === "large" || viewMode === "list") && (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToWatchlist?.(movie._id);
+            }}
+            style={{
+              width: "100%",
+              marginTop: "0.5rem",
+              padding: "0.25rem 0.75rem",
+              border: "1px solid #d1d5db",
+              borderRadius: "0.375rem",
+              backgroundColor: "white",
+              color: "#374151",
+              fontSize: "0.875rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.25rem"
+            }}
+          >
+            ❤️ Add to Watchlist
+          </button>
+        )}
+      </div>
     );
 
     if (viewMode === "list") {
-      return (
-        <div className="flex-1 p-4">
-          {commonInfo}
-        </div>
-      );
+      return commonInfo;
     }
 
-    return (
-      <CardContent className={`p-${gridSize === "small" ? "2" : gridSize === "large" ? "6" : "4"}`}>
-        {commonInfo}
-      </CardContent>
-    );
+    return commonInfo;
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    target.style.display = 'none';
+    const parent = target.parentElement;
+    if (parent) {
+      parent.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(to bottom right, #e2e8f0, #cbd5e1);"><span style="color: #64748b; font-size: 0.875rem;">Poster not available</span></div>';
+    }
   };
 
   return (
-    <Card className={getCardClasses()}>
-      <CardHeader className={viewMode === "list" ? "p-0" : "p-0"}>
-        <div className={getImageContainerClasses()}>
+    <div style={getCardStyles()}>
+      <div style={viewMode === "list" ? getImageContainerStyles() : {}}>
+        <div style={getImageContainerStyles()}>
           {movie.posterUrl ? (
             <Image
               src={movie.posterUrl}
               alt={movie.title}
-              fill
-              className="object-cover transition-transform hover:scale-105"
-              sizes={getImageSizes()}
+              fill={viewMode !== "list"}
+              width={viewMode === "list" ? 96 : undefined}
+              height={viewMode === "list" ? 144 : undefined}
+              style={viewMode === "list" ? getImageStyles() : undefined}
+              sizes={viewMode === "list" ? "96px" : undefined}
+              onError={handleImageError}
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-gray-200">
-              <span className="text-gray-500">No poster</span>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              background: "linear-gradient(to bottom right, #e2e8f0, #cbd5e1)",
+            }}>
+              <span style={{ color: "#64748b", fontSize: "0.875rem" }}>No poster</span>
             </div>
           )}
         </div>
-      </CardHeader>
+      </div>
       {renderCardContent()}
-    </Card>
+    </div>
   );
 }
+
+export { MovieCardSkeleton };

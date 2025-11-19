@@ -5,22 +5,18 @@ import { MovieCard, type GridSize } from "@/components/movie-card";
 import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useMovies } from "@/hooks/use-movies";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input, Button, Badge } from "@/components/ui-simple";
 
 const ITEMS_PER_PAGE = 12;
 
 export default function MoviesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [genreFilter, setGenreFilter] = useState("");
   const [gridSize, setGridSize] = useState<GridSize>("medium");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { movies, genres, isLoading, error } = useMovies({
+  const { movies, isLoading, error } = useMovies({
     searchQuery,
-    genreFilter,
     limit: 100, // Get more items for pagination
   });
 
@@ -33,44 +29,91 @@ export default function MoviesPage() {
     }
   };
 
-  const getGridCols = () => {
+  const getGridClassName = () => {
     if (viewMode === "list") {
-      return "grid-cols-1";
+      return "grid grid-cols-1 gap-4";
     }
-
+    
     switch (gridSize) {
       case "small":
-        return "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6";
+        return "grid gap-4 grid-cols-3 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]";
       case "large":
-        return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+        return "grid gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]";
       default:
-        return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+        return "grid gap-6 grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]";
     }
   };
 
-  // Reset to page 1 when filters change
+  const getContainerStyles = () => ({
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "2rem 1rem"
+  });
+
+  const getHeaderStyles = () => ({
+    marginBottom: "2rem"
+  });
+
+  const getControlsStyles = () => ({
+    marginBottom: "1.5rem",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "1rem"
+  });
+
+  const getSearchBarStyles = () => ({
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap" as const,
+    gap: "1rem",
+    justifyContent: "space-between"
+  });
+
+  const getGenreFilterStyles = () => ({
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "0.5rem"
+  });
+
+  const getLoadingStyles = () => ({
+    display: "flex",
+    justifyContent: "center",
+    padding: "3rem 0"
+  });
+
+  const getEmptyStateStyles = () => ({
+    textAlign: "center" as const,
+    padding: "4rem 1rem"
+  });
+
+  // Reset to page 1 when search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, genreFilter]);
+  }, [searchQuery]);
 
   // Calculate pagination
   const filteredMovies = movies || [];
   const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedMovies = filteredMovies.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE,
-  );
+  const paginatedMovies = filteredMovies.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   if (error) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="rounded-lg bg-red-50 p-4 text-red-700">
-          <h2 className="text-lg font-semibold">Error loading movies</h2>
-          <p className="text-sm">
+      <div style={getContainerStyles()}>
+        <div style={{
+          backgroundColor: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: "0.5rem",
+          padding: "1rem",
+          color: "#dc2626"
+        }}>
+          <h2 style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "0.5rem" }}>
+            Error loading movies
+          </h2>
+          <p style={{ fontSize: "0.875rem", marginBottom: "0.5rem" }}>
             There was a problem fetching the movie data.
           </p>
-          <Button onClick={() => window.location.reload()} className="mt-2">
+          <Button onClick={() => window.location.reload()}>
             Try Again
           </Button>
         </div>
@@ -79,23 +122,23 @@ export default function MoviesPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold">Browse Movies</h1>
-        <p className="text-gray-600">
+    <div style={getContainerStyles()}>
+      <div style={getHeaderStyles()}>
+        <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
+          Browse Movies
+        </h1>
+        <p style={{ color: "#6b7280" }}>
           Discover and explore our collection of movies
         </p>
       </div>
 
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div style={getControlsStyles()}>
+        <div style={getSearchBarStyles()}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", flex: 1 }}>
             <Input
-              type="text"
               placeholder="Search movies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
             />
             <GridControls
               gridSize={gridSize}
@@ -108,30 +151,38 @@ export default function MoviesPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="text-center">
-            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
-            <p className="text-lg text-gray-600">Loading movies...</p>
-            <p className="text-sm text-gray-500">
+        <div style={getLoadingStyles()}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{
+              width: "3rem",
+              height: "3rem",
+              border: "4px solid #e5e7eb",
+              borderTopColor: "#3b82f6",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+              margin: "0 auto 1rem"
+            }}></div>
+            <p style={{ fontSize: "1.125rem", color: "#374151", marginBottom: "0.5rem" }}>
+              Loading movies...
+            </p>
+            <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
               Please wait while we fetch the latest movies
             </p>
           </div>
         </div>
       ) : paginatedMovies.length > 0 ? (
         <>
-          <div
-            className={`grid gap-${viewMode === "list" ? "4" : gridSize === "small" ? "4" : gridSize === "large" ? "6" : "6"} ${getGridCols()}`}
-          >
+          <div className={getGridClassName()}>
             {paginatedMovies.map((movie) => (
-              <MovieCard
-                key={movie._id}
-                movie={movie}
+              <MovieCard 
+                key={movie._id} 
+                movie={movie} 
                 gridSize={gridSize}
                 viewMode={viewMode}
               />
             ))}
           </div>
-
+          
           <PaginationControls
             currentPage={currentPage}
             totalPages={totalPages}
@@ -141,22 +192,24 @@ export default function MoviesPage() {
           />
         </>
       ) : (
-        <div className="text-center py-16">
-          <div className="mb-6">
-            <div className="text-6xl mb-4">🎬</div>
-            <h3 className="mb-2 text-2xl font-semibold">No movies found</h3>
-            <p className="text-gray-600 mb-6">
-              {searchQuery || genreFilter
-                ? "Try adjusting your search or filter criteria to find what you're looking for."
+        <div style={getEmptyStateStyles()}>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎬</div>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "0.5rem" }}>
+              No movies found
+            </h3>
+            <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>
+              {searchQuery
+                ? "Try adjusting your search criteria to find what you're looking for."
                 : "No movies are available in the database at the moment."}
             </p>
           </div>
-          {!searchQuery && !genreFilter && (
-            <div className="space-y-3">
-              <Button onClick={handleSeeding} size="lg" className="px-8">
+          {!searchQuery && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
+              <Button onClick={handleSeeding} size="lg" style={{ padding: "0.75rem 2rem" }}>
                 Load Sample Movies
               </Button>
-              <p className="text-sm text-gray-500">
+              <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
                 This will add some example movies to browse
               </p>
             </div>
