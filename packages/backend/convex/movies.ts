@@ -249,15 +249,14 @@ export const updateMovie = mutation({
       throw new Error("Movie not found");
     }
     
-    // Merge existing movie data with updates
-    const updatedMovie = {
-      ...movie,
+    // Construct the update object with only the fields that are defined
+    const updates = {
       ...Object.fromEntries(
         Object.entries(updateFields).filter(([_, value]) => value !== undefined)
       ),
       updated_at: new Date().toISOString(),
     };
     
-    return await ctx.db.patch(id, updatedMovie);
+    return await ctx.db.patch(id, updates);
   },
 });

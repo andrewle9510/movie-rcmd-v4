@@ -506,6 +506,8 @@ export const updateExistingMovies = action({
           if (result.success && result.movieData) {
             const dbData = result.movieData.db_structure_data;
             
+            console.log(`Data ready for ${movie.title} - Posters: ${dbData.posters?.length || 0}, Backdrops: ${dbData.backdrops?.length || 0}`);
+
             // Save the data to the database
             await ctx.runMutation(internal.movies.updateMovie, {
               id: movie._id,

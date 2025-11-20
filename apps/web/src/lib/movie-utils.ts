@@ -8,12 +8,16 @@ export function transformMovieData(movie: any): Movie {
     main_backdrop: movie.main_backdrop,
   });
 
-  const posterUrl = movie.main_poster 
-    ? `https://image.tmdb.org/t/p/w500${movie.main_poster.startsWith('/') ? '' : '/'}${movie.main_poster}`
+  // Ensure main_poster and main_backdrop are strings before using them
+  const mainPoster = typeof movie.main_poster === 'string' ? movie.main_poster : undefined;
+  const mainBackdrop = typeof movie.main_backdrop === 'string' ? movie.main_backdrop : undefined;
+
+  const posterUrl = mainPoster 
+    ? `https://image.tmdb.org/t/p/w500${mainPoster.startsWith('/') ? '' : '/'}${mainPoster}`
     : undefined;
   
-  const backdropUrl = movie.main_backdrop
-    ? `https://image.tmdb.org/t/p/original${movie.main_backdrop.startsWith('/') ? '' : '/'}${movie.main_backdrop}`
+  const backdropUrl = mainBackdrop
+    ? `https://image.tmdb.org/t/p/original${mainBackdrop.startsWith('/') ? '' : '/'}${mainBackdrop}`
     : undefined;
 
   console.log("🎬 Transformed URLs:", { 
@@ -22,6 +26,15 @@ export function transformMovieData(movie: any): Movie {
     hasPoster: !!posterUrl,
     hasBackdrop: !!backdropUrl
   });
+
+  // Ensure posters and backdrops are arrays of strings
+  const posters = Array.isArray(movie.posters) 
+    ? movie.posters.filter((p: any) => typeof p === 'string')
+    : [];
+
+  const backdrops = Array.isArray(movie.backdrops)
+    ? movie.backdrops.filter((p: any) => typeof p === 'string')
+    : [];
 
   return {
     _id: movie._id,
@@ -37,7 +50,7 @@ export function transformMovieData(movie: any): Movie {
     director: undefined,
     cast: movie.cast || [],
     tmdbId: movie.tmdb_id,
-    posters: movie.posters || [],
-    backdrops: movie.backdrops || [],
+    posters,
+    backdrops,
   };
 }
