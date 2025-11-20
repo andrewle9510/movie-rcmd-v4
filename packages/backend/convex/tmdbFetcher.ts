@@ -505,12 +505,28 @@ export const updateExistingMovies = action({
             tmdbId: movie.tmdb_id
           });
           
-          if (result.success) {
+          if (result.success && result.movieData) {
+            const dbData = result.movieData.db_structure_data;
+            
+            // Save the data to the database
+            await ctx.runMutation(internal.movies.updateMovie, {
+              id: movie._id,
+              // Update fields that might have changed
+              popularity: dbData.popularity,
+              vote_count_system: dbData.vote_count_system,
+              vote_pts_system: dbData.vote_pts_system,
+              posters: dbData.posters,
+              backdrops: dbData.backdrops,
+              tmdb_data_imported_at: new Date().toISOString(),
+              main_poster: dbData.main_poster,
+              main_backdrop: dbData.main_backdrop
+            });
+
             updatedCount++;
             console.log(`Successfully updated: ${movie.title}`);
           } else {
             failedCount++;
-            console.error(`Failed to update: ${movie.title} - ${result.message}`);
+            console.error(`Failed to fetch data for: ${movie.title} - ${result.message}`);
             errors.push({
               id: movie._id,
               title: movie.title,

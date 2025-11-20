@@ -139,6 +139,8 @@ async function processSingleMovie(ctx: any, tmdbId: number) {
         trailer_url: dbStructureData.trailer_url,
         main_poster: dbStructureData.main_poster,
         main_backdrop: dbStructureData.main_backdrop,
+        posters: dbStructureData.posters,
+        backdrops: dbStructureData.backdrops,
         created_at: dbStructureData.created_at,
         updated_at: dbStructureData.updated_at,
       });

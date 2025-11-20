@@ -51,6 +51,8 @@ export const createMovieFromTmdbData = mutation({
     trailer_url: v.string(),
     main_poster: v.optional(v.string()),
     main_backdrop: v.optional(v.string()),
+    posters: v.optional(v.array(v.object({ file_path: v.string() }))),
+    backdrops: v.optional(v.array(v.object({ file_path: v.string() }))),
     created_at: v.string(),
     updated_at: v.string(),
   },
@@ -103,6 +105,8 @@ export const createMovieFromTmdbData = mutation({
       main_poster: args.main_poster ?? "",
       main_backdrop: args.main_backdrop ?? "",
       screenshots: args.screenshots ?? [],
+      posters: args.posters,
+      backdrops: args.backdrops,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
