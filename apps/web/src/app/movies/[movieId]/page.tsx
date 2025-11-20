@@ -33,7 +33,12 @@ export default function MovieDetailPage() {
 
   // Resolve Backdrop URL
   let activeBackdropUrl = movie.backdropUrl;
-  if (imageConfig?.backdropIndex !== undefined && movie.backdrops && movie.backdrops[imageConfig.backdropIndex]) {
+  if (imageConfig?.backdropFilepath) {
+    // Use manual file path if provided
+    const backdropPath = imageConfig.backdropFilepath;
+    activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
+  } else if (imageConfig?.backdropIndex !== undefined && movie.backdrops && movie.backdrops[imageConfig.backdropIndex]) {
+    // Use index from stored backdrops if provided
     const backdropPath = movie.backdrops[imageConfig.backdropIndex];
     activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
   }

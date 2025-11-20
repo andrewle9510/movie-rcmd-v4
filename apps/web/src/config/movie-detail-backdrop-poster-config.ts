@@ -4,10 +4,10 @@
 
 export const MovieDetailImageConfig: Record<
   number,
-  { posterIndex?: number; backdropIndex?: number }
+  { posterIndex?: number; backdropIndex?: number; backdropFilepath?: string }
 > = {
   // Example:
   // 550: { posterIndex: 1, backdropIndex: 0 } // Fight Club
   // 157336: { posterIndex: 0, backdropIndex: 2 } // Interstellar
-  1022789: { posterIndex: 5, backdropIndex: 15 },
+  1022789: { posterIndex: 5, backdropIndex: 16 },
 };
