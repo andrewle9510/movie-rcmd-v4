@@ -7,7 +7,7 @@ import type { TmdbMovieResponse, DbMovieStructure } from "./movieDataInterfaces"
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
-async function fetchFromTmdb(endpoint: string, params: Record<string, any> = {}): Promise<any> {
+async function fetchFromTmdb(endpoint: string, params: Record<string, any> = {}, retries = 3): Promise<any> {
   if (!TMDB_API_KEY) {
     throw new Error("TMDB_API_KEY environment variable is not set");
   }
@@ -17,14 +17,100 @@ async function fetchFromTmdb(endpoint: string, params: Record<string, any> = {})
     ...params
   });
 
-  const response = await fetch(`${TMDB_BASE_URL}${endpoint}?${searchParams}`);
-  
-  if (!response.ok) {
-    throw new Error(`TMDB API error: ${response.status} - ${response.statusText}`);
-  }
+  let lastError;
 
-  return await response.json();
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await fetch(`${TMDB_BASE_URL}${endpoint}?${searchParams}`);
+      
+      if (response.status === 429) {
+        // Rate limited
+        const retryAfter = response.headers.get('Retry-After');
+        const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 1000 * Math.pow(2, i);
+        console.log(`Rate limited. Retrying after ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+
+      if (!response.ok) {
+        // Don't retry on 4xx errors (except 429) as they are likely client errors
+        if (response.status >= 400 && response.status < 500) {
+           throw new Error(`TMDB API error: ${response.status} - ${response.statusText}`);
+        }
+        throw new Error(`TMDB API error: ${response.status} - ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+      // Don't retry if it's a client error that we threw above
+      if (error instanceof Error && error.message.includes('TMDB API error: 4')) {
+         throw error;
+      }
+      
+      if (i < retries) {
+        const waitTime = 1000 * Math.pow(2, i);
+        console.warn(`Attempt ${i + 1} failed. Retrying in ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+  
+  throw lastError || new Error("Failed to fetch from TMDB after retries");
 }
+
+// Helper to just fetch the list of IDs for bulk operations
+export const fetchPopularMovieIds = action({
+  args: {
+    page: v.number(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const response = await fetchFromTmdb('/movie/popular', { page: args.page });
+      const movies = response.results || [];
+      
+      return {
+        success: true,
+        ids: movies.map((m: any) => m.id),
+        page: args.page,
+        total_pages: response.total_pages
+      };
+    } catch (error) {
+      console.error(`Error fetching popular movie IDs: ${error}`);
+      return {
+        success: false,
+        ids: [],
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+});
+
+export const fetchTopRatedMovieIds = action({
+  args: {
+    page: v.number(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const response = await fetchFromTmdb('/movie/top_rated', { page: args.page });
+      const movies = response.results || [];
+      
+      return {
+        success: true,
+        ids: movies.map((m: any) => m.id),
+        page: args.page,
+        total_pages: response.total_pages
+      };
+    } catch (error) {
+      console.error(`Error fetching top rated movie IDs: ${error}`);
+      return {
+        success: false,
+        ids: [],
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+});
 
 async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promise<DbMovieStructure> {
   // Get extended movie details (with credits)

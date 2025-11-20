@@ -43,8 +43,8 @@ export const runTmdbImportWorkflow = action({
             // Note: In a real implementation, you'd need a separate script or process
             // to read the local file and call importSingleTmdbMovie
             result.convexImport = {
-              status: "IMPLEMENTATION_NEEDED",
-              message: "Run local import script to import saved data to Convex"
+              status: "READY_FOR_LOCAL_IMPORT",
+              message: "Run local script to import: node scripts/tmdbWorkflow.js import-single " + args.tmdbId
             };
           }
           break;
@@ -56,8 +56,8 @@ export const runTmdbImportWorkflow = action({
           });
           
           result.convexImport = {
-            status: "IMPLEMENTATION_NEEDED",
-            message: "Run local import script to import saved data to Convex"
+            status: "READY_FOR_LOCAL_IMPORT",
+            message: "Run local script to fetch and save: node scripts/tmdbWorkflow.js fetch-popular " + (args.pages || 1)
           };
           break;
           
@@ -68,8 +68,8 @@ export const runTmdbImportWorkflow = action({
           });
           
           result.convexImport = {
-            status: "IMPLEMENTATION_NEEDED",
-            message: "Run local import script to import saved data to Convex"
+            status: "READY_FOR_LOCAL_IMPORT",
+            message: "Run local script to fetch and save: node scripts/tmdbWorkflow.js fetch-top-rated " + (args.pages || 1)
           };
           break;
           
@@ -80,8 +80,8 @@ export const runTmdbImportWorkflow = action({
           });
           
           result.convexImport = {
-            status: "IMPLEMENTATION_NEEDED",
-            message: "Run local import script to import saved data to Convex"
+            status: "READY_FOR_LOCAL_IMPORT",
+            message: "Run local script (not yet implemented for now_playing)"
           };
           break;
           

@@ -1,4 +1,4 @@
-import { action, mutation } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { type Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
@@ -179,6 +179,44 @@ export const checkTmdbImportStatus = action({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred',
         message: `Failed to check import status for TMDB ID: ${args.tmdbId}`
+      };
+    }
+  }
+});
+
+// Query to check which movie IDs already exist in the database
+export const checkMovieExistence = query({
+  args: {
+    tmdbIds: v.array(v.number()),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const existingIds: number[] = [];
+      
+      // Since we can't do a single "in" query efficiently for a list of IDs in Convex yet
+      // (unless we use a search index or complex logic), we will iterate.
+      // For batches of 20 (page size), this is acceptable.
+      for (const id of args.tmdbIds) {
+         const movie = await ctx.db
+          .query("movies")
+          .withIndex("by_tmdb_id", (q) => q.eq("tmdb_id", id))
+          .unique();
+          
+         if (movie) {
+           existingIds.push(id);
+         }
+      }
+
+      return {
+        success: true,
+        existingIds
+      };
+    } catch (error) {
+      console.error(`Error checking movie existence: ${error}`);
+      return {
+        success: false,
+        existingIds: [],
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
   }

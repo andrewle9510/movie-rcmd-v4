@@ -6,161 +6,80 @@ import type { DbMovieStructure } from "./movieDataInterfaces";
 // Direct import workflow: Fetch from TMDB and import directly to Convex database
 export const runTmdbDirectImportWorkflow = action({
   args: {
-    tmdbId: v.number(), // Required for single movie import
+    importType: v.optional(v.union(
+      v.literal('single'),
+      v.literal('popular'),
+      v.literal('top_rated')
+    )),
+    tmdbId: v.optional(v.number()), // Required for single movie import
+    limit: v.optional(v.number()), // Number of pages for bulk import
   },
   handler: async (ctx, args) => {
+    const importType = args.importType || 'single';
+
     try {
-      console.log(`Starting direct TMDB import for movie ID: ${args.tmdbId}`);
-      
-      // Fetch movie details from TMDB API
-      const tmdbApiKey = process.env.TMDB_API_KEY;
-      if (!tmdbApiKey) {
-        throw new Error("TMDB_API_KEY environment variable is not set");
+      console.log(`Starting direct TMDB import workflow: ${importType}`);
+
+      if (importType === 'single') {
+        if (!args.tmdbId) throw new Error("tmdbId is required for single import");
+        return await processSingleMovie(ctx, args.tmdbId);
       }
 
-      // Fetch movie details with additional data
-      const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${args.tmdbId}?api_key=${tmdbApiKey}&append_to_response=credits,videos,keywords,release_dates`
-      );
-      
-      if (!response.ok) {
-        throw new Error(`TMDB API error: ${response.status} - ${response.statusText}`);
-      }
+      // Bulk import logic
+      const limit = args.limit || 1;
+      const stats = {
+        found: 0,
+        skipped_existing: 0,
+        imported: 0,
+        failed: 0,
+        pages_processed: 0
+      };
 
-      const movieDetails = await response.json();
+      for (let page = 1; page <= limit; page++) {
+        console.log(`Processing ${importType} page ${page}...`);
+        
+        // 1. Fetch List of IDs
+        let fetchResult;
+        if (importType === 'popular') {
+          fetchResult = await ctx.runAction(internal.tmdbFetcher.fetchPopularMovieIds, { page });
+        } else {
+          fetchResult = await ctx.runAction(internal.tmdbFetcher.fetchTopRatedMovieIds, { page });
+        }
 
-      // Transform TMDB data to database structure
-      const directors = movieDetails.credits?.crew
-        .filter((person: any) => person.job === 'Director')
-        .map((director: any) => director.id) || [];
+        if (!fetchResult.success) {
+           console.error(`Failed to fetch ${importType} page ${page}: ${fetchResult.error}`);
+           continue;
+        }
 
-      // Extract top cast members (first 10)
-      const cast = movieDetails.credits?.cast
-        .sort((a: any, b: any) => a.order - b.order)
-        .slice(0, 10)
-        .map((actor: any) => actor.id) || [];
+        const tmdbIds = fetchResult.ids;
+        stats.found += tmdbIds.length;
+        stats.pages_processed++;
 
-      // Extract production studios
-      const production_studio = movieDetails.production_companies?.map((company: any) => company.id) || [];
+        // 2. Check Existence in DB
+        const existenceCheck = await ctx.runQuery(internal.dbImporter.checkMovieExistence, { tmdbIds });
+        const existingIds = new Set(existenceCheck.existingIds || []);
+        
+        stats.skipped_existing += existingIds.size;
 
-      // Extract countries
-      const country = movieDetails.production_countries?.map((country: any) => country.name) || [];
-
-      // Extract languages
-      const languages = movieDetails.spoken_languages?.map((lang: any) => lang.english_name) || [];
-
-      // Extract genres
-      const genres = movieDetails.genres?.map((genre: any) => genre.id) || [];
-
-      // Extract keywords
-      const keywords = movieDetails.keywords?.keywords?.map((keyword: any) => keyword.id) || [];
-
-      // Extract MPAA rating from release dates
-      let mpaa_rating = '';
-      if (movieDetails.release_dates?.results) {
-        const usRelease = movieDetails.release_dates.results.find((release: any) => release.iso_3166_1 === 'US');
-        if (usRelease && usRelease.release_dates.length > 0) {
-          const firstRelease = usRelease.release_dates[0];
-          mpaa_rating = firstRelease.certification || '';
+        // 3. Filter
+        const idsToImport = tmdbIds.filter((id: number) => !existingIds.has(id));
+        
+        // 4. Process New Movies
+        for (const id of idsToImport) {
+          const result = await processSingleMovie(ctx, id);
+          if (result.success) {
+            stats.imported++;
+          } else {
+            stats.failed++;
+          }
         }
       }
 
-      // Extract trailer URL if available
-      const trailer = movieDetails.videos?.results?.find((video: any) => 
-        video.type === 'Trailer' && video.site === 'YouTube'
-      );
-
-      // Prepare the database structure
-      const dbMovieStructure: DbMovieStructure = {
-        title: movieDetails.title,
-        original_title: movieDetails.original_title,
-        slug: movieDetails.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        synopsis: movieDetails.overview || '',
-        tagline: movieDetails.tagline || '',
-        belong_to_collection: movieDetails.belongs_to_collection || null,
-        popularity: movieDetails.popularity || 0,
-        status: movieDetails.status || '',
-        release_date: movieDetails.release_date || '',
-        runtime_minutes: movieDetails.runtime || 0,
-        directors,
-        cast,
-        production_studio,
-        country,
-        genres,
-        mood: [], // For now, can be populated later based on genres or other factors
-        keywords,
-        original_language: languages[0] || 'English',
-        language: languages,
-        mpaa_rating,
-        vote_pts_system: {
-          tmdb: movieDetails.vote_average || 0,
-          imdb: null, // Would need to fetch from OMDB or another source
-          letterboxd: null, // Not available from TMDB
-          rotten_tomatoes: null, // Not available from TMDB
-          metacritic: null // Not available from TMDB
-        },
-        vote_count_system: {
-          tmdb: movieDetails.vote_count || 0,
-          imdb: null,
-          letterboxd: null,
-          rotten_tomatoes: null,
-          metacritic: null
-        },
-        budget: movieDetails.budget || 0,
-        revenue: movieDetails.revenue || 0,
-        tmdb_id: movieDetails.id,
-        tmdb_data_imported_at: new Date().toISOString(),
-        imdb_id: movieDetails.imdb_id || '',
-        screenshots: [], // TMDB doesn't provide screenshots directly
-        trailer_url: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : '',
-        main_poster: movieDetails.poster_path,
-        main_backdrop: movieDetails.backdrop_path,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      // Import directly to Convex database
-      const importResult = await ctx.runMutation(internal.dbImporter.createMovieFromTmdbData, {
-        title: dbMovieStructure.title,
-        original_title: dbMovieStructure.original_title,
-        slug: dbMovieStructure.slug,
-        synopsis: dbMovieStructure.synopsis,
-        tagline: dbMovieStructure.tagline,
-        belong_to_collection: dbMovieStructure.belong_to_collection,
-        popularity: dbMovieStructure.popularity,
-        status: dbMovieStructure.status,
-        release_date: dbMovieStructure.release_date,
-        runtime_minutes: dbMovieStructure.runtime_minutes,
-        directors: dbMovieStructure.directors,
-        cast: dbMovieStructure.cast,
-        production_studio: dbMovieStructure.production_studio,
-        country: dbMovieStructure.country,
-        genres: dbMovieStructure.genres,
-        mood: dbMovieStructure.mood,
-        keywords: dbMovieStructure.keywords,
-        original_language: dbMovieStructure.original_language,
-        language: dbMovieStructure.language,
-        mpaa_rating: dbMovieStructure.mpaa_rating,
-        vote_pts_system: dbMovieStructure.vote_pts_system,
-        vote_count_system: dbMovieStructure.vote_count_system,
-        budget: dbMovieStructure.budget,
-        revenue: dbMovieStructure.revenue,
-        tmdb_id: dbMovieStructure.tmdb_id,
-        tmdb_data_imported_at: dbMovieStructure.tmdb_data_imported_at,
-        imdb_id: dbMovieStructure.imdb_id,
-        screenshots: dbMovieStructure.screenshots,
-        trailer_url: dbMovieStructure.trailer_url,
-        main_poster: dbMovieStructure.main_poster,
-        main_backdrop: dbMovieStructure.main_backdrop,
-        created_at: dbMovieStructure.created_at,
-        updated_at: dbMovieStructure.updated_at,
-      });
-
       return {
         success: true,
-        tmdbId: args.tmdbId,
-        importResult,
-        message: `Successfully imported movie with TMDB ID: ${args.tmdbId} directly to Convex`
+        importType,
+        stats,
+        message: `Bulk import completed. Found: ${stats.found}, Skipped: ${stats.skipped_existing}, Imported: ${stats.imported}, Failed: ${stats.failed}`
       };
 
     } catch (error) {
@@ -168,11 +87,78 @@ export const runTmdbDirectImportWorkflow = action({
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred',
-        message: `Failed to import movie with TMDB ID: ${args.tmdbId}`
+        message: `Failed to import ${importType}`
       };
     }
   }
 });
+
+async function processSingleMovie(ctx: any, tmdbId: number) {
+  try {
+      // Step 1: Fetch and normalize data using the shared fetcher (includes retries)
+      const fetchResult = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveMovie, {
+        tmdbId
+      });
+
+      if (!fetchResult.success || !fetchResult.movieData) {
+        throw new Error(fetchResult.error || fetchResult.message || "Failed to fetch movie data");
+      }
+
+      const dbStructureData = fetchResult.movieData.db_structure_data;
+
+      // Step 2: Import directly to Convex database
+      const importResult = await ctx.runMutation(internal.dbImporter.createMovieFromTmdbData, {
+        title: dbStructureData.title,
+        original_title: dbStructureData.original_title,
+        slug: dbStructureData.slug,
+        synopsis: dbStructureData.synopsis,
+        tagline: dbStructureData.tagline,
+        belong_to_collection: dbStructureData.belong_to_collection,
+        popularity: dbStructureData.popularity,
+        status: dbStructureData.status,
+        release_date: dbStructureData.release_date,
+        runtime_minutes: dbStructureData.runtime_minutes,
+        directors: dbStructureData.directors,
+        cast: dbStructureData.cast,
+        production_studio: dbStructureData.production_studio,
+        country: dbStructureData.country,
+        genres: dbStructureData.genres,
+        mood: dbStructureData.mood,
+        keywords: dbStructureData.keywords,
+        original_language: dbStructureData.original_language,
+        language: dbStructureData.language,
+        mpaa_rating: dbStructureData.mpaa_rating,
+        vote_pts_system: dbStructureData.vote_pts_system,
+        vote_count_system: dbStructureData.vote_count_system,
+        budget: dbStructureData.budget,
+        revenue: dbStructureData.revenue,
+        tmdb_id: dbStructureData.tmdb_id,
+        tmdb_data_imported_at: dbStructureData.tmdb_data_imported_at,
+        imdb_id: dbStructureData.imdb_id,
+        screenshots: dbStructureData.screenshots,
+        trailer_url: dbStructureData.trailer_url,
+        main_poster: dbStructureData.main_poster,
+        main_backdrop: dbStructureData.main_backdrop,
+        created_at: dbStructureData.created_at,
+        updated_at: dbStructureData.updated_at,
+      });
+
+      return {
+        success: true,
+        tmdbId,
+        importResult,
+        message: `Successfully imported movie with TMDB ID: ${tmdbId} directly to Convex`
+      };
+  } catch (error) {
+      console.error(`Error processing movie ${tmdbId}: ${error}`);
+      return {
+        success: false,
+        tmdbId,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: `Failed to process movie ${tmdbId}`
+      };
+  }
+}
 
 // Action to validate that TMDB API key is configured properly
 export const validateTmdbConfiguration = action({
