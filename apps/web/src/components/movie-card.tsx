@@ -233,7 +233,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
   };
 
   return (
-    <Link href={`/movies/${movie._id}`} style={getCardStyles()}>
+    <Link href={`/movies/${movie.tmdbId ?? movie._id}`} style={getCardStyles()}>
       <div style={viewMode === "list" ? getImageContainerStyles() : {}}>
         <div style={getImageContainerStyles()}>
           {movie.posterUrl ? (

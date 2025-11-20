@@ -162,12 +162,12 @@ async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promis
   const posters = (movieDetails.images?.posters || [])
     .sort((a: any, b: any) => b.vote_count - a.vote_count)
     .slice(0, 10)
-    .map((image: any) => ({ file_path: image.file_path }));
+    .map((image: any) => image.file_path);
 
   const backdrops = (movieDetails.images?.backdrops || [])
     .sort((a: any, b: any) => b.vote_count - a.vote_count)
     .slice(0, 10)
-    .map((image: any) => ({ file_path: image.file_path }));
+    .map((image: any) => image.file_path);
 
   return {
     title: movieDetails.title,

@@ -27,14 +27,14 @@ export default function MovieDetailPage() {
   // Resolve Poster URL
   let activePosterUrl = movie.posterUrl;
   if (imageConfig?.posterIndex !== undefined && movie.posters && movie.posters[imageConfig.posterIndex]) {
-    const posterPath = movie.posters[imageConfig.posterIndex].file_path;
+    const posterPath = movie.posters[imageConfig.posterIndex];
     activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
   }
 
   // Resolve Backdrop URL
   let activeBackdropUrl = movie.backdropUrl;
   if (imageConfig?.backdropIndex !== undefined && movie.backdrops && movie.backdrops[imageConfig.backdropIndex]) {
-    const backdropPath = movie.backdrops[imageConfig.backdropIndex].file_path;
+    const backdropPath = movie.backdrops[imageConfig.backdropIndex];
     activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
   }
 

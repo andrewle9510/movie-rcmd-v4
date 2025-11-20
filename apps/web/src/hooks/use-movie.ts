@@ -6,7 +6,18 @@ import { transformMovieData } from "@/lib/movie-utils";
 import type { Id } from "@/convex/_generated/dataModel";
 
 export function useMovie(id: string) {
-  const convexMovie = useQuery(api.movies.getMovie, { id: id as Id<"movies"> });
+  const isTmdbId = /^\d+$/.test(id);
+  const tmdbId = isTmdbId ? parseInt(id, 10) : null;
+
+  const convexMovieById = useQuery(api.movies.getMovie, 
+    !isTmdbId ? { id: id as Id<"movies"> } : "skip"
+  );
+
+  const convexMovieByTmdbId = useQuery(api.movies.getMovieByTmdbId,
+    isTmdbId && tmdbId !== null ? { tmdbId } : "skip"
+  );
+
+  const convexMovie = isTmdbId ? convexMovieByTmdbId : convexMovieById;
 
   if (convexMovie === undefined) {
     return { movie: undefined, isLoading: true, error: null };

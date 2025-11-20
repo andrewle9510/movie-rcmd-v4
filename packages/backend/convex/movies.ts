@@ -25,6 +25,19 @@ export const getMovie = query({
   },
 });
 
+// Get a specific movie by TMDB ID
+export const getMovieByTmdbId = query({
+  args: {
+    tmdbId: v.number(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("movies")
+      .withIndex("by_tmdb_id", (q) => q.eq("tmdb_id", args.tmdbId))
+      .first();
+  },
+});
+
 // Search movies by various criteria
 export const searchMovies = query({
   args: {
@@ -162,8 +175,8 @@ export const createMovie = mutation({
     tmdb_data_imported_at: v.string(),
     imdb_id: v.string(),
     screenshots: v.array(v.string()),
-    posters: v.optional(v.array(v.object({ file_path: v.string() }))),
-    backdrops: v.optional(v.array(v.object({ file_path: v.string() }))),
+    posters: v.optional(v.array(v.string())),
+    backdrops: v.optional(v.array(v.string())),
     trailer_url: v.string(),
     main_poster: v.optional(v.string()),
     main_backdrop: v.optional(v.string()),
@@ -221,8 +234,8 @@ export const updateMovie = mutation({
     tmdb_data_imported_at: v.optional(v.string()),
     imdb_id: v.optional(v.string()),
     screenshots: v.optional(v.array(v.string())),
-    posters: v.optional(v.array(v.object({ file_path: v.string() }))),
-    backdrops: v.optional(v.array(v.object({ file_path: v.string() }))),
+    posters: v.optional(v.array(v.string())),
+    backdrops: v.optional(v.array(v.string())),
     trailer_url: v.optional(v.string()),
     main_poster: v.optional(v.string()),
     main_backdrop: v.optional(v.string()),
