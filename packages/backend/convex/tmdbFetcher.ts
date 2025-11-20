@@ -158,12 +158,14 @@ async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promis
     video.type === 'Trailer' && video.site === 'YouTube'
   );
 
-  // Process images - get top 10 posters and top 30 backdrops (default TMDB order)
+  // Process images - get top 10 posters and top 30 backdrops (sorted by vote_average)
   const posters = (movieDetails.images?.posters || [])
+    .sort((a: any, b: any) => b.vote_average - a.vote_average)
     .slice(0, 10)
     .map((image: any) => image.file_path);
 
   const backdrops = (movieDetails.images?.backdrops || [])
+    .sort((a: any, b: any) => b.vote_average - a.vote_average)
     .slice(0, 30)
     .map((image: any) => image.file_path);
 
