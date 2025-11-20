@@ -13,6 +13,7 @@ import type * as dbImporter from "../dbImporter.js";
 import type * as execConvexImportTmdbWorkflow from "../execConvexImportTmdbWorkflow.js";
 import type * as execLocalImportTmdbWorkflow from "../execLocalImportTmdbWorkflow.js";
 import type * as healthCheck from "../healthCheck.js";
+import type * as migrations from "../migrations.js";
 import type * as movieDataInterfaces from "../movieDataInterfaces.js";
 import type * as movies from "../movies.js";
 import type * as tmdbFetcher from "../tmdbFetcher.js";
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   execConvexImportTmdbWorkflow: typeof execConvexImportTmdbWorkflow;
   execLocalImportTmdbWorkflow: typeof execLocalImportTmdbWorkflow;
   healthCheck: typeof healthCheck;
+  migrations: typeof migrations;
   movieDataInterfaces: typeof movieDataInterfaces;
   movies: typeof movies;
   tmdbFetcher: typeof tmdbFetcher;
