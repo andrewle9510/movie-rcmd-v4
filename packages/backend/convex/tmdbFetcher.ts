@@ -480,3 +480,70 @@ export const fetchTmdbGenres = action({
     }
   }
 });
+
+// Action to update all existing movies in the database with fresh data from TMDB
+export const updateExistingMovies = action({
+  args: {},
+  handler: async (ctx) => {
+    try {
+      console.log('Starting update of all existing movies...');
+      
+      // Get all movies from the database
+      const movies = await ctx.runQuery(internal.movies.getAllMovies);
+      console.log(`Found ${movies.length} movies to update.`);
+      
+      let updatedCount = 0;
+      let failedCount = 0;
+      const errors: any[] = [];
+      
+      // Iterate and update each movie
+      for (const movie of movies) {
+        console.log(`Updating movie: ${movie.title} (ID: ${movie._id}, TMDB ID: ${movie.tmdb_id})`);
+        
+        try {
+          const result = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveMovie, {
+            tmdbId: movie.tmdb_id
+          });
+          
+          if (result.success) {
+            updatedCount++;
+            console.log(`Successfully updated: ${movie.title}`);
+          } else {
+            failedCount++;
+            console.error(`Failed to update: ${movie.title} - ${result.message}`);
+            errors.push({
+              id: movie._id,
+              title: movie.title,
+              error: result.message
+            });
+          }
+        } catch (err) {
+          failedCount++;
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          console.error(`Exception updating ${movie.title}: ${errorMessage}`);
+          errors.push({
+            id: movie._id,
+            title: movie.title,
+            error: errorMessage
+          });
+        }
+      }
+      
+      return {
+        success: true,
+        total: movies.length,
+        updated: updatedCount,
+        failed: failedCount,
+        errors,
+        message: `Update complete. Updated ${updatedCount}/${movies.length} movies.`
+      };
+    } catch (error) {
+      console.error(`Error in updateExistingMovies: ${error}`);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: 'Failed to execute update workflow'
+      };
+    }
+  }
+});

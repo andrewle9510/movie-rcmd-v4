@@ -1,6 +1,19 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { type Id } from "./_generated/dataModel";
+
+// Internal query to get all movies (for maintenance tasks)
+export const getAllMovies = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const movies = await ctx.db.query("movies").collect();
+    return movies.map(movie => ({
+      _id: movie._id,
+      tmdb_id: movie.tmdb_id,
+      title: movie.title
+    }));
+  },
+});
 
 // Get a specific movie by ID
 export const getMovie = query({
