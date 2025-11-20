@@ -70,6 +70,26 @@ export interface TmdbMovieResponse {
       }>;
     }>;
   };
+  images?: {
+    backdrops: Array<{
+      aspect_ratio: number;
+      height: number;
+      iso_639_1: string | null;
+      file_path: string;
+      vote_average: number;
+      vote_count: number;
+      width: number;
+    }>;
+    posters: Array<{
+      aspect_ratio: number;
+      height: number;
+      iso_639_1: string | null;
+      file_path: string;
+      vote_average: number;
+      vote_count: number;
+      width: number;
+    }>;
+  };
 }
 
 // Our database structure for Convex (normalized format)
@@ -114,6 +134,8 @@ export interface DbMovieStructure {
   tmdb_data_imported_at: string;
   imdb_id: string;
   screenshots: string[];
+  posters?: { file_path: string }[];
+  backdrops?: { file_path: string }[];
   trailer_url: string;
   main_poster: string | undefined;
   main_backdrop: string | undefined;

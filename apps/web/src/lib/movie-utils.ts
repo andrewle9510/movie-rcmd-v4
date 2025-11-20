@@ -37,5 +37,7 @@ export function transformMovieData(movie: any): Movie {
     director: undefined,
     cast: movie.cast || [],
     tmdbId: movie.tmdb_id,
+    posters: movie.posters || [],
+    backdrops: movie.backdrops || [],
   };
 }

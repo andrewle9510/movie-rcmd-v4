@@ -4,6 +4,7 @@ import { useMovie } from "@/hooks/use-movie";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
+import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
 
 export default function MovieDetailPage() {
   const params = useParams();
@@ -20,6 +21,23 @@ export default function MovieDetailPage() {
     ? 'md:flex-row-reverse' 
     : 'md:flex-row';
 
+  // Resolve configured images
+  const imageConfig = movie.tmdbId ? MovieDetailImageConfig[movie.tmdbId] : undefined;
+
+  // Resolve Poster URL
+  let activePosterUrl = movie.posterUrl;
+  if (imageConfig?.posterIndex !== undefined && movie.posters && movie.posters[imageConfig.posterIndex]) {
+    const posterPath = movie.posters[imageConfig.posterIndex].file_path;
+    activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
+  }
+
+  // Resolve Backdrop URL
+  let activeBackdropUrl = movie.backdropUrl;
+  if (imageConfig?.backdropIndex !== undefined && movie.backdrops && movie.backdrops[imageConfig.backdropIndex]) {
+    const backdropPath = movie.backdrops[imageConfig.backdropIndex].file_path;
+    activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       
@@ -28,10 +46,10 @@ export default function MovieDetailPage() {
         className="relative w-full bg-muted overflow-hidden"
         style={{ height: MovieDetailUIConfig.layout.backdropHeight }}
       >
-        {movie.backdropUrl && (
+        {activeBackdropUrl && (
           <>
             <Image 
-              src={movie.backdropUrl} 
+              src={activeBackdropUrl} 
               alt={`${movie.title} backdrop`}
               fill 
               className="object-cover opacity-50" 
@@ -76,9 +94,9 @@ export default function MovieDetailPage() {
               className="relative rounded-lg overflow-hidden bg-muted shadow-2xl border-4 border-white/10"
               style={{ aspectRatio: MovieDetailUIConfig.poster.aspectRatio }}
             >
-              {movie.posterUrl ? (
+              {activePosterUrl ? (
                 <Image
-                  src={movie.posterUrl}
+                  src={activePosterUrl}
                   alt={movie.title}
                   fill
                   className="object-cover"

@@ -113,8 +113,8 @@ export const fetchTopRatedMovieIds = action({
 });
 
 async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promise<DbMovieStructure> {
-  // Get extended movie details (with credits)
-  const movieDetails = await fetchFromTmdb(`/movie/${movie.id}`, { append_to_response: 'credits,videos,keywords,release_dates' });
+  // Get extended movie details (with credits, images)
+  const movieDetails = await fetchFromTmdb(`/movie/${movie.id}`, { append_to_response: 'credits,videos,keywords,release_dates,images' });
   
   // Extract directors from crew
   const directors = movieDetails.credits?.crew
@@ -158,6 +158,17 @@ async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promis
     video.type === 'Trailer' && video.site === 'YouTube'
   );
 
+  // Process images - get top 10 posters and backdrops by vote_count
+  const posters = (movieDetails.images?.posters || [])
+    .sort((a: any, b: any) => b.vote_count - a.vote_count)
+    .slice(0, 10)
+    .map((image: any) => ({ file_path: image.file_path }));
+
+  const backdrops = (movieDetails.images?.backdrops || [])
+    .sort((a: any, b: any) => b.vote_count - a.vote_count)
+    .slice(0, 10)
+    .map((image: any) => ({ file_path: image.file_path }));
+
   return {
     title: movieDetails.title,
     original_title: movieDetails.original_title,
@@ -199,6 +210,8 @@ async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promis
     tmdb_data_imported_at: new Date().toISOString(),
     imdb_id: movieDetails.imdb_id || '',
     screenshots: [], // TMDB doesn't provide screenshots directly
+    posters,
+    backdrops,
     trailer_url: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : '',
     main_poster: movieDetails.poster_path,
     main_backdrop: movieDetails.backdrop_path,
@@ -218,7 +231,7 @@ export const fetchAndSaveMovie = action({
       
       // Fetch movie details from TMDB
       const tmdbMovie = await fetchFromTmdb(`/movie/${args.tmdbId}`, { 
-        append_to_response: 'credits,videos,keywords,release_dates'
+        append_to_response: 'credits,videos,keywords,release_dates,images'
       });
 
       // Transform TMDB data to database structure

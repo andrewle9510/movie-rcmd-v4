@@ -1,5 +1,5 @@
 # Project Rules
-- **Documentation**: Always update feature documentation (`docs/features/`) after modifying any files. Keep the docs in sync with the code.
+- **Documentation**: Always update feature documentation (`docs/features/`) after modifying any files related to those features. Keep the docs in sync with the code.
 
 # Development Instructions
 
