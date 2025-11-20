@@ -26,7 +26,11 @@ export default function MovieDetailPage() {
 
   // Resolve Poster URL
   let activePosterUrl = movie.posterUrl;
-  if (imageConfig?.posterIndex !== undefined && movie.posters && movie.posters[imageConfig.posterIndex]) {
+  if (imageConfig?.posterFilepath) {
+    // Use manual file path if provided
+    const posterPath = imageConfig.posterFilepath;
+    activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
+  } else if (imageConfig?.posterIndex !== undefined && movie.posters && movie.posters[imageConfig.posterIndex]) {
     const posterPath = movie.posters[imageConfig.posterIndex];
     activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
   }
