@@ -1,7 +1,4 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { Square, LayoutGrid, List } from "lucide-react";
+import { Button } from "./ui-simple";
 
 type GridSize = "small" | "medium" | "large";
 type ViewMode = "grid" | "list";
@@ -19,28 +16,82 @@ export function GridControls({
   onGridSizeChange,
   onViewModeChange,
 }: GridControlsProps) {
+  const getIconButtonStyles = (active: boolean) => ({
+    border: "1px solid #d1d5db",
+    backgroundColor: active ? "#f3f4f6" : "#ffffff",
+    borderRadius: "0.375rem",
+    padding: "0",
+    width: "2rem",
+    height: "2rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: "0.25rem",
+    cursor: "pointer",
+    transition: "background-color 0.15s ease-in-out"
+  });
+
+  const getContainerStyles = () => ({
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem"
+  });
+
   return (
-    <div className="flex items-center gap-2">
+    <div style={getContainerStyles()}>
+      {/* Grid size controls */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        border: "1px solid #d1d5db",
+        borderRadius: "0.375rem",
+        padding: "0.125rem"
+      }}>
+        <div
+          onClick={() => onGridSizeChange("small")}
+          style={getIconButtonStyles(gridSize === "small")}
+          title="Compact grid"
+        >
+          ▢
+        </div>
+        <div
+          onClick={() => onGridSizeChange("medium")}
+          style={getIconButtonStyles(gridSize === "medium")}
+          title="Medium grid"
+        >
+          ⊞
+        </div>
+        <div
+          onClick={() => onGridSizeChange("large")}
+          style={getIconButtonStyles(gridSize === "large")}
+          title="Large grid"
+        >
+          ⊡
+        </div>
+      </div>
+
       {/* View mode toggle */}
-      <div className="flex items-center border rounded-md p-1">
-        <Button
-          variant={viewMode === "grid" ? "secondary" : "ghost"}
-          size="sm"
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        border: "1px solid #d1d5db",
+        borderRadius: "0.375rem",
+        padding: "0.125rem"
+      }}>
+        <div
           onClick={() => onViewModeChange("grid")}
-          className="h-8 w-8 p-0"
+          style={getIconButtonStyles(viewMode === "grid")}
           title="Grid view"
         >
-          <LayoutGrid className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={viewMode === "list" ? "secondary" : "ghost"}
-          size="sm"
+          ⊞
+        </div>
+        <div
           onClick={() => onViewModeChange("list")}
-          className="h-8 w-8 p-0"
+          style={getIconButtonStyles(viewMode === "list")}
           title="List view"
         >
-          <List className="h-4 w-4" />
-        </Button>
+          ≡
+        </div>
       </div>
     </div>
   );

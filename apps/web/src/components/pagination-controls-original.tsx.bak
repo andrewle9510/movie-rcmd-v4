@@ -1,4 +1,7 @@
-import { Button } from "./ui-simple";
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -52,86 +55,52 @@ export function PaginationControls({
     return pages;
   };
 
-  const getContainerStyles = () => ({
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "1rem",
-    padding: "1rem 0"
-  });
-
-  const getButtonStyles = (active?: boolean) => ({
-    minWidth: "2.5rem",
-    height: "2.5rem",
-    padding: "0 0.5rem",
-    borderRadius: "0.375rem",
-    border: "1px solid #d1d5db",
-    backgroundColor: active ? "#3b82f6" : "#ffffff",
-    color: active ? "#ffffff" : "#374151",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "0.875rem",
-    transition: "all 0.15s ease-in-out",
-    margin: "0 0.125rem"
-  });
-
   if (totalPages <= 1) {
     return null;
   }
 
   return (
-    <div style={getContainerStyles()}>
+    <div className="flex flex-col items-center gap-4 py-4">
       {totalItems > 0 && (
-        <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+        <p className="text-sm text-gray-600">
           Showing {startItem} to {endItem} of {totalItems} results
         </p>
       )}
       
-      <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+      <div className="flex items-center gap-2">
         <Button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1}
           variant="outline"
           size="sm"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.25rem"
-          }}
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
         >
-          ‹ Previous
+          <ChevronLeft className="h-4 w-4" />
+          Previous
         </Button>
         
-        <div style={{ display: "flex", gap: "0.125rem" }}>
+        <div className="flex gap-1">
           {getPageNumbers().map((page, index) => (
-            <button
+            <Button
               key={index}
+              variant={page === currentPage ? "default" : "outline"}
+              size="sm"
               onClick={() => typeof page === "number" && onPageChange(page)}
               disabled={typeof page !== "number"}
-              style={{
-                ...getButtonStyles(typeof page === "number" && page === currentPage),
-                cursor: typeof page !== "number" ? "default" : "pointer"
-              }}
+              className="w-10 h-10"
             >
               {page}
-            </button>
+            </Button>
           ))}
         </div>
         
         <Button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages}
           variant="outline"
           size="sm"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.25rem"
-          }}
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
         >
-          Next ›
+          Next
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

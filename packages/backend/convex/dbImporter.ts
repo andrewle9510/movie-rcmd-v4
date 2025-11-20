@@ -63,8 +63,28 @@ export const createMovieFromTmdbData = mutation({
 
     if (existingMovie) {
       // Update existing movie instead of creating duplicate
+      // Clean up vote_count_system data to match schema (remove undefined values)
+      const { vote_count_system, vote_pts_system, ...otherArgs } = args;
+      const cleanedVoteCountSystem = {
+        tmdb: vote_count_system.tmdb,
+        imdb: vote_count_system.imdb ?? null,
+        letterboxd: vote_count_system.letterboxd ?? null,
+        metacritic: vote_count_system.metacritic ?? null,
+        rotten_tomatoes: vote_count_system.rotten_tomatoes ?? null,
+      };
+      
+      const cleanedVotePtsSystem = {
+        tmdb: vote_pts_system.tmdb,
+        imdb: vote_pts_system.imdb ?? null,
+        letterboxd: vote_pts_system.letterboxd ?? null,
+        metacritic: vote_pts_system.metacritic ?? null,
+        rotten_tomatoes: vote_pts_system.rotten_tomatoes ?? null,
+      };
+      
       await ctx.db.patch(existingMovie._id, {
-        ...args,
+        ...otherArgs,
+        vote_count_system: cleanedVoteCountSystem,
+        vote_pts_system: cleanedVotePtsSystem,
         updated_at: new Date().toISOString(),
       });
       
@@ -79,6 +99,10 @@ export const createMovieFromTmdbData = mutation({
     // Create new movie
     const movieId = await ctx.db.insert("movies", {
       ...args,
+      // Handle optional fields by providing defaults
+      main_poster: args.main_poster ?? "",
+      main_backdrop: args.main_backdrop ?? "",
+      screenshots: args.screenshots ?? [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

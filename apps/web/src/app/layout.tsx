@@ -15,10 +15,25 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const getBodyStyles = {
+    fontFamily: 'Inter, sans-serif',
+    margin: 0,
+    padding: 0,
+    minHeight: "100vh"
+  };
+
+  const getMainContainerStyles = {
+    minHeight: "100vh"
+  };
+
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+      <body style={getBodyStyles}>
+        <ConvexClientProvider>
+          <div style={getMainContainerStyles}>
+            {children}
+          </div>
+        </ConvexClientProvider>
       </body>
     </html>
   );

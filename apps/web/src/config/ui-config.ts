@@ -17,11 +17,11 @@ export const UIConfig = {
   },
   card: {
     aspectRatio: "150%", // 2:3 ratio
-    showInfo: true,
-    showDescription: true,
-    showRating: true,
-    showDuration: true,
-    showWatchlistButton: true,
+    showInfo: false,
+    showDescription: false,
+    showRating: false,
+    showDuration: false,
+    showWatchlistButton: false,
     padding: {
       small: "0.5rem",
       medium: "1rem",

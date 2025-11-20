@@ -1,0 +1,188 @@
+import Image from "next/image";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Star, Heart, Clock } from "lucide-react";
+import type { Movie } from "@/types/movie";
+import { MovieCardSkeleton } from "./movie-card-skeleton";
+
+export type GridSize = "small" | "medium" | "large";
+
+interface MovieCardProps {
+  movie: Movie;
+  gridSize?: GridSize;
+  viewMode?: "grid" | "list";
+  onAddToWatchlist?: (movieId: string) => void;
+}
+
+export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAddToWatchlist }: MovieCardProps) {
+  const getCardClasses = () => {
+    const baseClasses = "movie-card-hover";
+    
+    if (viewMode === "list") {
+      return `flex flex-row ${baseClasses}`;
+    }
+    
+    return `${baseClasses} m-4`;
+  };
+
+  const getImageContainerClasses = () => {
+    if (viewMode === "list") {
+      return "relative w-24 h-36 flex-shrink-0 overflow-hidden";
+    }
+    
+    switch (gridSize) {
+      case "small":
+        return "relative aspect-[2/3] overflow-hidden";
+      case "large":
+        return "relative aspect-[2/3] overflow-hidden";
+      default:
+        return "relative aspect-[2/3] overflow-hidden";
+    }
+  };
+
+  const getImageSizes = () => {
+    if (viewMode === "list") {
+      return "96px";
+    }
+    
+    switch (gridSize) {
+      case "small":
+        return "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw";
+      case "large":
+        return "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw";
+      default:
+        return "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw";
+    }
+  };
+
+  const renderCardContent = () => {
+    const commonInfo = (
+      <>
+        <h3 className={`font-bold leading-tight line-clamp-2 ${
+          viewMode === "list" ? "text-base mb-2" : 
+          gridSize === "small" ? "text-sm mb-2" : 
+          gridSize === "large" ? "text-xl mb-3" : 
+          "text-lg mb-2"
+        }`}>
+          {movie.title}
+        </h3>
+        
+        {gridSize !== "small" && viewMode === "grid" && (
+          <p className={`text-muted-foreground line-clamp-3 ${
+            gridSize === "large" ? "text-sm mb-3" : "text-sm mb-3"
+          }`}>
+            {movie.description}
+          </p>
+        )}
+
+        {viewMode === "list" && (
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
+            {movie.description}
+          </p>
+        )}
+        
+        <div className={`flex flex-wrap gap-1 ${
+          viewMode === "list" ? "mb-3" : 
+          gridSize === "small" ? "mb-3" : "mb-3"
+        }`}>
+          {(viewMode === "list" 
+            ? movie.genres.slice(0, 5)
+            : movie.genres.slice(0, gridSize === "small" ? 2 : 3)
+          ).map((genre) => (
+            <Badge 
+              key={genre} 
+              variant="secondary" 
+              className={`${
+                gridSize === "small" ? "text-xs" : "text-xs"
+              }`}
+            >
+              {genre}
+            </Badge>
+          ))}
+        </div>
+        
+        <div className={`flex items-center justify-between mb-2 ${
+          viewMode === "list" || gridSize === "small" ? "text-xs" : "text-sm"
+        }`}>
+          <span className="text-muted-foreground">{new Date(movie.releaseDate).getFullYear()}</span>
+          {movie.rating && (
+            <span className="flex items-center text-amber-600 font-medium">
+              <Star className="h-3 w-3 mr-1 fill-current" />
+              {movie.rating.toFixed(1)}
+            </span>
+          )}
+        </div>
+        
+        {movie.duration && (
+          <div className={`flex items-center text-xs text-muted-foreground mb-2 ${
+            viewMode === "list" || gridSize === "small" ? "" : ""
+          }`}>
+            <Clock className="h-3 w-3 mr-1" />
+            {Math.floor(movie.duration / 60)}h {movie.duration % 60}m
+          </div>
+        )}
+        
+        {(gridSize === "large" || viewMode === "list") && (
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="w-full mt-2"
+            onClick={() => onAddToWatchlist?.(movie._id)}
+          >
+            <Heart className="h-3 w-3 mr-1" />
+            Add to Watchlist
+          </Button>
+        )}
+      </>
+    );
+
+    if (viewMode === "list") {
+      return (
+        <div className="flex-1 p-4">
+          {commonInfo}
+        </div>
+      );
+    }
+
+    return (
+      <CardContent className={`${gridSize === "small" ? "p-2" : gridSize === "large" ? "p-6" : "p-4"}`}>
+        {commonInfo}
+      </CardContent>
+    );
+  };
+
+  return (
+    <Card className={getCardClasses()}>
+      <CardHeader className={viewMode === "list" ? "p-0" : "p-0"}>
+        <div className={getImageContainerClasses()}>
+          {movie.posterUrl ? (
+            <Image
+              src={movie.posterUrl}
+              alt={movie.title}
+              fill
+              className="object-cover transition-transform duration-300 hover:scale-105"
+              sizes={getImageSizes()}
+              onError={(e) => {
+                // Handle broken images by showing placeholder
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = '<div class="flex h-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-700"><span class="text-slate-500 text-sm">Poster not available</span></div>';
+                }
+              }}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-700">
+              <span className="text-slate-500 text-sm">No poster</span>
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      {renderCardContent()}
+    </Card>
+  );
+}
+
+export { MovieCardSkeleton };
