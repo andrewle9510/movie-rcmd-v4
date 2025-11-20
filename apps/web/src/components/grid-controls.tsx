@@ -1,5 +1,3 @@
-import { Button } from "./ui-simple";
-
 type GridSize = "small" | "medium" | "large";
 type ViewMode = "grid" | "list";
 
@@ -16,82 +14,71 @@ export function GridControls({
   onGridSizeChange,
   onViewModeChange,
 }: GridControlsProps) {
-  const getIconButtonStyles = (active: boolean) => ({
-    border: "1px solid #d1d5db",
-    backgroundColor: active ? "#f3f4f6" : "#ffffff",
-    borderRadius: "0.375rem",
-    padding: "0",
-    width: "2rem",
-    height: "2rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: "0.25rem",
-    cursor: "pointer",
-    transition: "background-color 0.15s ease-in-out"
-  });
-
-  const getContainerStyles = () => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem"
-  });
+  const buttonClass = (active: boolean) => `
+    w-8 h-8 flex items-center justify-center rounded-md transition-colors
+    ${active 
+      ? "bg-primary text-primary-foreground font-medium shadow-sm" 
+      : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent/20"
+    }
+  `;
 
   return (
-    <div style={getContainerStyles()}>
+    <div className="flex items-center gap-3 bg-card p-1 rounded-lg border border-border/50">
       {/* Grid size controls */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        border: "1px solid #d1d5db",
-        borderRadius: "0.375rem",
-        padding: "0.125rem"
-      }}>
-        <div
+      <div className="flex items-center gap-1 border-r border-border/50 pr-3 mr-1">
+        <button
           onClick={() => onGridSizeChange("small")}
-          style={getIconButtonStyles(gridSize === "small")}
+          className={buttonClass(gridSize === "small")}
           title="Compact grid"
+          aria-label="Compact grid"
         >
-          ▢
-        </div>
-        <div
+          <span className="text-xs">S</span>
+        </button>
+        <button
           onClick={() => onGridSizeChange("medium")}
-          style={getIconButtonStyles(gridSize === "medium")}
+          className={buttonClass(gridSize === "medium")}
           title="Medium grid"
+          aria-label="Medium grid"
         >
-          ⊞
-        </div>
-        <div
+          <span className="text-xs">M</span>
+        </button>
+        <button
           onClick={() => onGridSizeChange("large")}
-          style={getIconButtonStyles(gridSize === "large")}
+          className={buttonClass(gridSize === "large")}
           title="Large grid"
+          aria-label="Large grid"
         >
-          ⊡
-        </div>
+          <span className="text-xs">L</span>
+        </button>
       </div>
 
       {/* View mode toggle */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        border: "1px solid #d1d5db",
-        borderRadius: "0.375rem",
-        padding: "0.125rem"
-      }}>
-        <div
+      <div className="flex items-center gap-1">
+        <button
           onClick={() => onViewModeChange("grid")}
-          style={getIconButtonStyles(viewMode === "grid")}
+          className={buttonClass(viewMode === "grid")}
           title="Grid view"
+          aria-label="Grid view"
         >
-          ⊞
-        </div>
-        <div
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="7" height="7" x="3" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="14" rx="1" />
+            <rect width="7" height="7" x="3" y="14" rx="1" />
+          </svg>
+        </button>
+        <button
           onClick={() => onViewModeChange("list")}
-          style={getIconButtonStyles(viewMode === "list")}
+          className={buttonClass(viewMode === "list")}
           title="List view"
+          aria-label="List view"
         >
-          ≡
-        </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" x2="21" y1="6" y2="6" />
+            <line x1="3" x2="21" y1="12" y2="12" />
+            <line x1="3" x2="21" y1="18" y2="18" />
+          </svg>
+        </button>
       </div>
     </div>
   );

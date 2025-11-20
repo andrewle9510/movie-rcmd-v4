@@ -1,58 +1,20 @@
 import Link from "next/link";
-import { Button } from "@/components/ui-simple";
 
 export default function HomePage() {
-  const getContainerStyles = () => ({
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "1rem",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-  });
-
-  const getTextContainerStyles = () => ({
-    textAlign: "center" as const,
-    maxWidth: "42rem"
-  });
-
-  const getHeadingStyles = () => ({
-    fontSize: "2.25rem",
-    fontWeight: "bold",
-    marginBottom: "1rem",
-    background: "linear-gradient(to right, #ffffff, #e0e7ff)",
-    WebkitBackgroundClip: "text" as const,
-    WebkitTextFillColor: "transparent",
-    textShadow: "2px 2px 4px rgba(0,0,0,0.3)"
-  });
-
-  const getDescriptionStyles = () => ({
-    fontSize: "1.25rem",
-    color: "#e0e7ff",
-    marginBottom: "2rem",
-    textShadow: "1px 1px 2px rgba(0,0,0,0.3)"
-  });
-
-  const getLinkStyles = {
-    textDecoration: "none",
-    display: "inline-block"
-  };
-
   return (
-    <div style={getContainerStyles()}>
-      <div style={getTextContainerStyles()}>
-        <h1 style={getHeadingStyles()}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-600 to-purple-700">
+      <div className="text-center max-w-2xl">
+        <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white to-indigo-100 bg-clip-text text-transparent drop-shadow-md">
           Movie Recommendation System
         </h1>
-        <p style={getDescriptionStyles()}>
+        <p className="text-xl text-indigo-100 mb-8 drop-shadow-sm">
           Discover amazing movies and get personalized recommendations based on your preferences
         </p>
-        <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
-          <Link href="/movies" style={getLinkStyles}>
-            <Button size="lg">
+        <div className="flex justify-center gap-4">
+          <Link href="/movies" className="inline-block">
+            <button className="px-8 py-3 bg-primary text-primary-foreground text-lg font-medium rounded-md shadow-lg hover:bg-primary/90 transition-all">
               Browse Movies
-            </Button>
+            </button>
           </Link>
         </div>
       </div>

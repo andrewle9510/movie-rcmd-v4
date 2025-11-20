@@ -147,6 +147,19 @@ packages/<package-name>/src/
 └── index.ts                  # Feature exports
 ```
 
+## Feature Documentation Rules
+
+When creating new files or folders for a specific feature, you must create a corresponding feature note to document the implementation.
+
+### Feature Note Requirements
+
+1. **Creation**: Whenever a new feature structure is created (e.g., `apps/web/src/features/<feature-name>`), create a matching documentation file.
+2. **Location**: Place the file in `docs/features/<feature-name>.md`.
+3. **Content**:
+   - **File Inventory**: List the key files and folders created.
+   - **Functioning Purpose**: Explain the specific purpose and responsibility of each file.
+   - **Interaction**: Briefly describe how these files interact to provide the feature's functionality.
+
 ## Implementation Examples
 
 ### Example 1: Creating a New Movie Browse Feature

@@ -1,7 +1,8 @@
+import Link from "next/link";
 import Image from "next/image";
 import type { Movie } from "@/types/movie";
 import { MovieCardSkeleton } from "./movie-card-skeleton";
-import { UIConfig } from "@/config/ui-config";
+import { UIConfig } from "@/config/movie-browsing-ui-config";
 
 export type GridSize = "small" | "medium" | "large";
 
@@ -19,7 +20,10 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
       borderRadius: "0.5rem", 
       overflow: "hidden",
       transition: "box-shadow 0.3s ease",
-      cursor: "pointer"
+      cursor: "pointer",
+      display: "block",
+      textDecoration: "none",
+      color: "inherit"
     } as React.CSSProperties;
     
     if (viewMode === "list") {
@@ -186,6 +190,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
         {UIConfig.card.showWatchlistButton && (gridSize === "large" || viewMode === "list") && (
           <button 
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onAddToWatchlist?.(movie._id);
             }}
@@ -228,7 +233,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
   };
 
   return (
-    <div style={getCardStyles()}>
+    <Link href={`/movies/${movie._id}`} style={getCardStyles()}>
       <div style={viewMode === "list" ? getImageContainerStyles() : {}}>
         <div style={getImageContainerStyles()}>
           {movie.posterUrl ? (
@@ -256,7 +261,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
         </div>
       </div>
       {renderCardContent()}
-    </div>
+    </Link>
   );
 }
 

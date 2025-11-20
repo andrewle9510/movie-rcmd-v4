@@ -3,6 +3,8 @@ export interface Movie {
   title: string;
   description: string;
   posterUrl?: string;
+  backdropUrl?: string;
+  tagline?: string;
   releaseDate: string;
   genres: string[];
   rating?: number;

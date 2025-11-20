@@ -5,8 +5,7 @@ import { MovieCard, type GridSize } from "@/components/movie-card";
 import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useMovies } from "@/hooks/use-movies";
-import { Input, Button, Badge } from "@/components/ui-simple";
-import { UIConfig } from "@/config/ui-config";
+import { UIConfig } from "@/config/movie-browsing-ui-config";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -31,82 +30,28 @@ export default function MoviesPage() {
   };
 
   const getGridStyles = () => {
-    const baseStyles = {
-      display: "grid",
-      width: "100%"
-    };
-
     if (viewMode === "list") {
       return {
-        ...baseStyles,
+        display: "grid",
+        width: "100%",
         gridTemplateColumns: "1fr",
         gap: UIConfig.grid.gap.medium
       };
     }
     
-    switch (gridSize) {
-      case "small":
-        return {
-          ...baseStyles,
-          gap: UIConfig.grid.gap.small,
-          gridTemplateColumns: `repeat(auto-fill, minmax(${UIConfig.grid.minColumnWidth.small}, 1fr))`
-        };
-      case "large":
-        return {
-          ...baseStyles,
-          gap: UIConfig.grid.gap.large,
-          gridTemplateColumns: `repeat(auto-fill, minmax(${UIConfig.grid.minColumnWidth.large}, 1fr))`
-        };
-      default:
-        return {
-          ...baseStyles,
-          gap: UIConfig.grid.gap.medium,
-          gridTemplateColumns: `repeat(auto-fill, minmax(${UIConfig.grid.minColumnWidth.medium}, 1fr))`
-        };
-    }
+    const minWidth = gridSize === "small" 
+      ? UIConfig.grid.minColumnWidth.small 
+      : gridSize === "large" 
+        ? UIConfig.grid.minColumnWidth.large 
+        : UIConfig.grid.minColumnWidth.medium;
+        
+    return {
+      display: "grid",
+      width: "100%",
+      gap: UIConfig.grid.gap.medium,
+      gridTemplateColumns: `repeat(auto-fill, minmax(${minWidth}, 1fr))`
+    };
   };
-
-  const getContainerStyles = () => ({
-    maxWidth: UIConfig.layout.containerMaxWidth,
-    margin: "0 auto",
-    padding: UIConfig.layout.pagePadding
-  });
-
-  const getHeaderStyles = () => ({
-    marginBottom: "2rem"
-  });
-
-  const getControlsStyles = () => ({
-    marginBottom: "1.5rem",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "1rem"
-  });
-
-  const getSearchBarStyles = () => ({
-    display: "flex",
-    alignItems: "center",
-    flexWrap: "wrap" as const,
-    gap: "1rem",
-    justifyContent: "space-between"
-  });
-
-  const getGenreFilterStyles = () => ({
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: "0.5rem"
-  });
-
-  const getLoadingStyles = () => ({
-    display: "flex",
-    justifyContent: "center",
-    padding: "3rem 0"
-  });
-
-  const getEmptyStateStyles = () => ({
-    textAlign: "center" as const,
-    padding: "4rem 1rem"
-  });
 
   // Reset to page 1 when search changes
   useEffect(() => {
@@ -121,76 +66,53 @@ export default function MoviesPage() {
 
   if (error) {
     return (
-      <div style={getContainerStyles()}>
-        <div style={{
-          backgroundColor: "#fef2f2",
-          border: "1px solid #fecaca",
-          borderRadius: "0.5rem",
-          padding: "1rem",
-          color: "#dc2626"
-        }}>
-          <h2 style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "0.5rem" }}>
-            Error loading movies
-          </h2>
-          <p style={{ fontSize: "0.875rem", marginBottom: "0.5rem" }}>
-            There was a problem fetching the movie data.
-          </p>
-          <Button onClick={() => window.location.reload()}>
+      <div className="container max-w-6xl mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+          <h2 className="text-lg font-bold mb-2">Error loading movies</h2>
+          <p className="text-sm mb-2">There was a problem fetching the movie data.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+          >
             Try Again
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={getContainerStyles()}>
-      <div style={getHeaderStyles()}>
-        <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-          Browse Movies
-        </h1>
-        <p style={{ color: "#6b7280" }}>
-          Discover and explore our collection of movies
-        </p>
+    <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2 text-foreground">Browse Movies</h1>
+        <p className="text-muted-foreground">Discover and explore our collection of movies</p>
       </div>
 
-      <div style={getControlsStyles()}>
-        <div style={getSearchBarStyles()}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", flex: 1 }}>
-            <Input
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+          <div className="w-full sm:max-w-sm">
+            <input
+              type="text"
               placeholder="Search movies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <GridControls
-              gridSize={gridSize}
-              viewMode={viewMode}
-              onGridSizeChange={setGridSize}
-              onViewModeChange={setViewMode}
+              className="w-full px-3 py-2 bg-card border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
             />
           </div>
+          <GridControls
+            gridSize={gridSize}
+            viewMode={viewMode}
+            onGridSizeChange={setGridSize}
+            onViewModeChange={setViewMode}
+          />
         </div>
       </div>
 
       {isLoading ? (
-        <div style={getLoadingStyles()}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{
-              width: "3rem",
-              height: "3rem",
-              border: "4px solid #e5e7eb",
-              borderTopColor: "#3b82f6",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-              margin: "0 auto 1rem"
-            }}></div>
-            <p style={{ fontSize: "1.125rem", color: "#374151", marginBottom: "0.5rem" }}>
-              Loading movies...
-            </p>
-            <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-              Please wait while we fetch the latest movies
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-12 h-12 border-4 border-muted border-t-primary rounded-full animate-spin mb-4"></div>
+          <p className="text-lg text-foreground font-medium mb-2">Loading movies...</p>
+          <p className="text-sm text-muted-foreground">Please wait while we fetch the latest movies</p>
         </div>
       ) : paginatedMovies.length > 0 ? (
         <>
@@ -214,26 +136,24 @@ export default function MoviesPage() {
           />
         </>
       ) : (
-        <div style={getEmptyStateStyles()}>
-          <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎬</div>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "0.5rem" }}>
-              No movies found
-            </h3>
-            <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>
-              {searchQuery
-                ? "Try adjusting your search criteria to find what you're looking for."
-                : "No movies are available in the database at the moment."}
-            </p>
-          </div>
+        <div className="text-center py-16 px-4">
+          <div className="mb-6 text-5xl">🎬</div>
+          <h3 className="text-xl font-bold mb-2 text-foreground">No movies found</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            {searchQuery
+              ? "Try adjusting your search criteria to find what you're looking for."
+              : "No movies are available in the database at the moment."}
+          </p>
+          
           {!searchQuery && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
-              <Button onClick={handleSeeding} size="lg" style={{ padding: "0.75rem 2rem" }}>
+            <div className="flex flex-col items-center gap-3">
+              <button 
+                onClick={handleSeeding} 
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium shadow-lg hover:bg-primary/90 transition-all"
+              >
                 Load Sample Movies
-              </Button>
-              <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                This will add some example movies to browse
-              </p>
+              </button>
+              <p className="text-xs text-muted-foreground">This will add some example movies to browse</p>
             </div>
           )}
         </div>

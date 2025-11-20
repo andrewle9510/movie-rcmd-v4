@@ -1,5 +1,3 @@
-import { Button } from "./ui-simple";
-
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -52,87 +50,57 @@ export function PaginationControls({
     return pages;
   };
 
-  const getContainerStyles = () => ({
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "1rem",
-    padding: "1rem 0"
-  });
-
-  const getButtonStyles = (active?: boolean) => ({
-    minWidth: "2.5rem",
-    height: "2.5rem",
-    padding: "0 0.5rem",
-    borderRadius: "0.375rem",
-    border: "1px solid #d1d5db",
-    backgroundColor: active ? "#3b82f6" : "#ffffff",
-    color: active ? "#ffffff" : "#374151",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "0.875rem",
-    transition: "all 0.15s ease-in-out",
-    margin: "0 0.125rem"
-  });
+  const buttonClass = (active?: boolean, disabled?: boolean) => `
+    min-w-9 h-9 px-2 flex items-center justify-center rounded-md text-sm font-medium transition-colors
+    ${disabled 
+      ? "opacity-50 cursor-not-allowed text-muted-foreground" 
+      : active 
+        ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" 
+        : "bg-card text-foreground border border-border/50 hover:bg-accent/10 hover:text-accent-foreground"
+    }
+  `;
 
   if (totalPages <= 1) {
     return null;
   }
 
   return (
-    <div style={getContainerStyles()}>
+    <div className="flex flex-col items-center gap-4 py-6">
       {totalItems > 0 && (
-        <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-          Showing {startItem} to {endItem} of {totalItems} results
+        <p className="text-sm text-muted-foreground">
+          Showing <span className="font-medium text-foreground">{startItem}</span> to <span className="font-medium text-foreground">{endItem}</span> of <span className="font-medium text-foreground">{totalItems}</span> results
         </p>
       )}
       
-      <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-        <Button
+      <div className="flex items-center gap-1">
+        <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          variant="outline"
-          size="sm"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.25rem"
-          }}
+          className={`${buttonClass(false, currentPage <= 1)} px-3`}
         >
           ‹ Previous
-        </Button>
+        </button>
         
-        <div style={{ display: "flex", gap: "0.125rem" }}>
+        <div className="flex gap-1">
           {getPageNumbers().map((page, index) => (
             <button
               key={index}
               onClick={() => typeof page === "number" && onPageChange(page)}
               disabled={typeof page !== "number"}
-              style={{
-                ...getButtonStyles(typeof page === "number" && page === currentPage),
-                cursor: typeof page !== "number" ? "default" : "pointer"
-              }}
+              className={buttonClass(typeof page === "number" && page === currentPage, typeof page !== "number")}
             >
               {page}
             </button>
           ))}
         </div>
         
-        <Button
+        <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          variant="outline"
-          size="sm"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.25rem"
-          }}
+          className={`${buttonClass(false, currentPage >= totalPages)} px-3`}
         >
           Next ›
-        </Button>
+        </button>
       </div>
     </div>
   );

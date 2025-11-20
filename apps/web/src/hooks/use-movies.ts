@@ -2,6 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { transformMovieData } from "@/lib/movie-utils";
 import type { Movie } from "@/types/movie";
 import { useMemo } from "react";
 
@@ -24,19 +25,7 @@ export function useMovies({ searchQuery, genreFilter, limit = 20 }: UseMoviesPar
     }
 
     try {
-      const processedMovies: Movie[] = convexMovies.map((movie: any) => ({
-        _id: movie._id,
-        title: movie.title,
-        description: movie.synopsis || movie.tagline || "No description available",
-        posterUrl: movie.main_poster ? `https://image.tmdb.org/t/p/w500${movie.main_poster}` : undefined,
-        releaseDate: movie.release_date,
-        genres: movie.genres || [],
-        rating: movie.vote_pts_system?.tmdb || undefined,
-        duration: movie.runtime_minutes || undefined,
-        director: undefined,
-        cast: movie.cast || [],
-        tmdbId: movie.tmdb_id,
-      }));
+      const processedMovies: Movie[] = convexMovies.map(transformMovieData);
       
       let filteredMovies = processedMovies;
       

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Button, Badge } from "@/components/ui-simple";
+import Link from "next/link";
 
 export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -9,173 +9,118 @@ export function Navbar() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to movies page with search query
     if (searchQuery.trim()) {
       window.location.href = `/movies?search=${encodeURIComponent(searchQuery)}`;
     }
   };
 
-  const getNavbarStyles = () => ({
-    backgroundColor: "#ffffff",
-    borderBottom: "1px solid #e5e7eb",
-    padding: "0 1rem",
-    position: "sticky" as const,
-    top: 0,
-    zIndex: 50,
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-  });
-
-  const getContainerStyles = () => ({
-    maxWidth: "1200px",
-    margin: "0 auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: "4rem"
-  });
-
-  const getLogoStyles = () => ({
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    color: "#3b82f6",
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem"
-  });
-
-  const getNavLinksStyles = () => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "1.5rem",
-    listStyle: "none",
-    margin: 0,
-    padding: 0
-  });
-
-  const getLinkStyles = () => ({
-    color: "#374151",
-    textDecoration: "none",
-    fontWeight: "500",
-    transition: "color 0.15s ease-in-out",
-    padding: "0.5rem 0.75rem",
-    borderRadius: "0.375rem"
-  });
-
-  const getMobileMenuButtonStyles = () => ({
-    padding: "0.5rem",
-    border: "1px solid #d1d5db",
-    borderRadius: "0.375rem",
-    backgroundColor: "#ffffff",
-    cursor: "pointer",
-    display: "none" as const
-  });
-
-  const getSearchFormStyles = () => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem"
-  });
-
-  const getMobileMenuStyles = (open: boolean) => ({
-    position: "absolute" as const,
-    top: "100%",
-    left: 0,
-    right: 0,
-    backgroundColor: "#ffffff",
-    borderBottom: "1px solid #e5e7eb",
-    padding: "1rem",
-    display: open ? "block" : "none" as const,
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
-  });
-
   return (
-    <nav style={getNavbarStyles()}>
-      <div style={getContainerStyles()}>
-        <a href="/" style={getLogoStyles()}>
+    <nav className="bg-background border-b border-border px-4 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-[1200px] mx-auto flex items-center justify-between h-16">
+        <Link 
+          href="/" 
+          className="text-2xl font-bold text-primary flex items-center gap-2 no-underline hover:opacity-90"
+        >
           🎬 MovieRcmd
-        </a>
+        </Link>
 
         {/* Desktop Navigation */}
-        <ul style={getNavLinksStyles()}>
+        <ul className="hidden md:flex items-center gap-6 list-none m-0 p-0">
           <li>
-            <a href="/" style={getLinkStyles()}>
+            <Link href="/" className="text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline">
               🏠 Home
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/movies" style={getLinkStyles()}>
+            <Link href="/movies" className="text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline">
               🎬 Movies
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/watchlist" style={getLinkStyles()}>
+            <Link href="/watchlist" className="text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline">
               ❤️ Watchlist
-            </a>
+            </Link>
           </li>
         </ul>
 
-        {/* Search Form */}
-        <form onSubmit={handleSearch} style={getSearchFormStyles()}>
-          <Input
-            placeholder="Search movies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: "200px" }}
-          />
-          <Button type="submit" size="sm">
-            🔍
-          </Button>
-        </form>
+        <div className="flex items-center gap-2">
+          {/* Search Form */}
+          <form onSubmit={handleSearch} className="hidden md:flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search movies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-[200px] px-3 py-1.5 bg-card border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+            <button 
+              type="submit" 
+              className="p-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              🔍
+            </button>
+          </form>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          style={{
-            ...getMobileMenuButtonStyles,
-            display: isMenuOpen || window.innerWidth < 768 ? "block" : "none"
-          }}
-        >
-          ☰
-        </button>
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2 border border-border rounded-md bg-background cursor-pointer hover:bg-secondary"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            ☰
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
-      <div style={getMobileMenuStyles(isMenuOpen)}>
-        <ul style={{ ...getNavLinksStyles(), flexDirection: "column" as const, gap: "0.5rem" }}>
-          <li>
-            <a href="/" style={getLinkStyles()} onClick={() => setIsMenuOpen(false)}>
-              🏠 Home
-            </a>
-          </li>
-          <li>
-            <a href="/movies" style={getLinkStyles()} onClick={() => setIsMenuOpen(false)}>
-              🎬 Movies
-            </a>
-          </li>
-          <li>
-            <a href="/watchlist" style={getLinkStyles()} onClick={() => setIsMenuOpen(false)}>
-              ❤️ Watchlist
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <style jsx>{`
-        @media (min-width: 768px) {
-          nav button:last-child {
-            display: none !important;
-          }
-          nav > div:last-child {
-            display: flex !important;
-          }
-        }
-        
-        a:hover {
-          color: #3b82f6 !important;
-          background-color: #f3f4f6;
-        }
-      `}</style>
+      {isMenuOpen && (
+        <div className="absolute top-full left-0 right-0 bg-background border-b border-border p-4 shadow-md md:hidden">
+          <ul className="flex flex-col gap-2 list-none m-0 p-0">
+            <li>
+              <Link 
+                href="/" 
+                className="block text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🏠 Home
+              </Link>
+            </li>
+            <li>
+              <Link 
+                href="/movies" 
+                className="block text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🎬 Movies
+              </Link>
+            </li>
+            <li>
+              <Link 
+                href="/watchlist" 
+                className="block text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ❤️ Watchlist
+              </Link>
+            </li>
+          </ul>
+          <form onSubmit={handleSearch} className="mt-4 flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search movies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 px-3 py-1.5 bg-card border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+            <button 
+              type="submit" 
+              className="p-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              🔍
+            </button>
+          </form>
+        </div>
+      )}
     </nav>
   );
 }
