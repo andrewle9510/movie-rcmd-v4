@@ -96,7 +96,7 @@ export const runTmdbDirectImportWorkflow = action({
 async function processSingleMovie(ctx: any, tmdbId: number) {
   try {
       // Step 1: Fetch and normalize data using the shared fetcher (includes retries)
-      const fetchResult = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveMovie, {
+      const fetchResult = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveMovie, {
         tmdbId
       });
 

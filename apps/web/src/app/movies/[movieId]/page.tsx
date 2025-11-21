@@ -47,6 +47,20 @@ export default function MovieDetailPage() {
     activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
   }
 
+  // Resolve Backdrop Gradient
+  const gradientConfig = MovieDetailUIConfig.backdrop.bottomFade;
+  let gradientClasses = "";
+  if (gradientConfig.enabled) {
+    const intensityMap = {
+      soft: "via-background/30",
+      medium: "via-background/60",
+      hard: "via-background/90",
+    };
+    // @ts-ignore - Configuring via map lookup
+    const viaClass = intensityMap[gradientConfig.intensity] || intensityMap.medium;
+    gradientClasses = `bg-gradient-to-t from-background ${viaClass} to-transparent`;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       
@@ -61,12 +75,18 @@ export default function MovieDetailPage() {
               src={activeBackdropUrl} 
               alt={`${movie.title} backdrop`}
               fill 
-              className="object-cover opacity-50" 
+              className="object-cover" 
+              style={{ opacity: MovieDetailUIConfig.backdrop.opacity }}
               priority 
               unoptimized
             />
             {/* Gradient for smooth transition to page background */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            {gradientConfig.enabled && (
+              <div 
+                className={`absolute bottom-0 left-0 right-0 ${gradientClasses}`}
+                style={{ height: gradientConfig.height }}
+              />
+            )}
           </>
         )}
       </div>

@@ -42,7 +42,7 @@ async function fetchAndSaveMovie(tmdbId) {
   console.log(`Fetching movie ${tmdbId} via Convex...`);
   try {
     // Call the Convex action to fetch data (using server-side API key)
-    const result = await client.action("tmdbFetcher:fetchAndSaveMovie", { tmdbId: parseInt(tmdbId) });
+    const result = await client.action("tmdbLocalFetch:fetchAndSaveMovie", { tmdbId: parseInt(tmdbId) });
     
     if (!result.success) {
       console.error(`Failed to fetch movie: ${result.message}`);
@@ -128,7 +128,7 @@ async function runWorkflow(importType, ...args) {
     case 'fetch-popular':
       const pages = args[0] ? parseInt(args[0]) : 1;
       console.log(`Fetching ${pages} pages of popular movies...`);
-      const popResult = await client.action("tmdbFetcher:fetchAndSavePopularMovies", { limit: pages });
+      const popResult = await client.action("tmdbLocalFetch:fetchAndSavePopularMovies", { limit: pages });
       if (popResult.success) {
         console.log(`Fetched ${popResult.successfullyProcessed} movies.`);
         await ensureDir();
@@ -148,7 +148,7 @@ async function runWorkflow(importType, ...args) {
     case 'fetch-top-rated':
       const trPages = args[0] ? parseInt(args[0]) : 1;
       console.log(`Fetching ${trPages} pages of top rated movies...`);
-      const trResult = await client.action("tmdbFetcher:fetchAndSaveTopRatedMovies", { limit: trPages });
+      const trResult = await client.action("tmdbLocalFetch:fetchAndSaveTopRatedMovies", { limit: trPages });
       if (trResult.success) {
         console.log(`Fetched ${trResult.successfullyProcessed} movies.`);
         await ensureDir();

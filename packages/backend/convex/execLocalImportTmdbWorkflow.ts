@@ -33,7 +33,7 @@ export const runTmdbImportWorkflow = action({
           
           // Step 1: Fetch and save the movie data
           console.log(`Step 1: Fetching movie with TMDB ID: ${args.tmdbId}`);
-          result = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveMovie, {
+          result = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveMovie, {
             tmdbId: args.tmdbId
           });
           
@@ -51,7 +51,7 @@ export const runTmdbImportWorkflow = action({
           
         case 'popular':
           console.log(`Step 1: Fetching popular movies`);
-          result = await ctx.runAction(internal.tmdbFetcher.fetchAndSavePopularMovies, {
+          result = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSavePopularMovies, {
             limit: args.pages || 1
           });
           
@@ -63,7 +63,7 @@ export const runTmdbImportWorkflow = action({
           
         case 'top_rated':
           console.log(`Step 1: Fetching top rated movies`);
-          result = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveTopRatedMovies, {
+          result = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveTopRatedMovies, {
             limit: args.pages || 1
           });
           
@@ -75,7 +75,7 @@ export const runTmdbImportWorkflow = action({
           
         case 'now_playing':
           console.log(`Step 1: Fetching now playing movies`);
-          result = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveNowPlayingMovies, {
+          result = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveNowPlayingMovies, {
             limit: args.pages || 1
           });
           
@@ -90,15 +90,15 @@ export const runTmdbImportWorkflow = action({
           const genresResult = await ctx.runAction(internal.tmdbFetcher.fetchTmdbGenres, {});
           
           console.log('Step 2: Fetching various movie categories');
-          const popularResult = await ctx.runAction(internal.tmdbFetcher.fetchAndSavePopularMovies, {
+          const popularResult = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSavePopularMovies, {
             limit: args.pages || 1
           });
           
-          const topRatedResult = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveTopRatedMovies, {
+          const topRatedResult = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveTopRatedMovies, {
             limit: args.pages || 1
           });
           
-          const nowPlayingResult = await ctx.runAction(internal.tmdbFetcher.fetchAndSaveNowPlayingMovies, {
+          const nowPlayingResult = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveNowPlayingMovies, {
             limit: args.pages || 1
           });
           
