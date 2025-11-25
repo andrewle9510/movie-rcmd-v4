@@ -15,7 +15,7 @@ export const MovieDetailUIConfig = {
     opacity: "1", // Opacity of the backdrop image (0 to 1). Set to "1" for full brightness.
     bottomFade: {
       enabled: true, // Turn on/off the bottom gradient fade
-      height: "30%", // How much of the backdrop height is covered (e.g., "50%", "200px", "100%")
+      height: "40%", // How much of the backdrop height is covered (e.g., "50%", "200px", "100%")
       intensity: "soft", // "soft" (light fade), "medium" (standard), "hard" (strong fade)
     },
   },

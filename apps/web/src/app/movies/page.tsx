@@ -5,7 +5,7 @@ import { MovieCard, type GridSize } from "@/components/movie-card";
 import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useMovies } from "@/hooks/use-movies";
-import { UIConfig } from "@/config/movie-browsing-ui-config";
+import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -35,20 +35,20 @@ export default function MoviesPage() {
         display: "grid",
         width: "100%",
         gridTemplateColumns: "1fr",
-        gap: UIConfig.grid.gap.medium
+        gap: MovieBrowsingUIConfig.grid.gap.medium
       };
     }
     
     const minWidth = gridSize === "small" 
-      ? UIConfig.grid.minColumnWidth.small 
+      ? MovieBrowsingUIConfig.grid.minColumnWidth.small 
       : gridSize === "large" 
-        ? UIConfig.grid.minColumnWidth.large 
-        : UIConfig.grid.minColumnWidth.medium;
+        ? MovieBrowsingUIConfig.grid.minColumnWidth.large 
+        : MovieBrowsingUIConfig.grid.minColumnWidth.medium;
         
     return {
       display: "grid",
       width: "100%",
-      gap: UIConfig.grid.gap.medium,
+      gap: MovieBrowsingUIConfig.grid.gap.medium,
       gridTemplateColumns: `repeat(auto-fill, minmax(${minWidth}, 1fr))`
     };
   };

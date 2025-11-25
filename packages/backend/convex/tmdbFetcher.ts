@@ -22,7 +22,7 @@ export async function fetchFromTmdb(endpoint: string, params: Record<string, any
   for (let i = 0; i <= retries; i++) {
     try {
       const response = await fetch(`${TMDB_BASE_URL}${endpoint}?${searchParams}`);
-      
+
       if (response.status === 429) {
         // Rate limited
         const retryAfter = response.headers.get('Retry-After');
@@ -47,7 +47,7 @@ export async function fetchFromTmdb(endpoint: string, params: Record<string, any
       if (error instanceof Error && error.message.includes('TMDB API error: 4')) {
          throw error;
       }
-      
+
       if (i < retries) {
         const waitTime = 1000 * Math.pow(2, i);
         console.warn(`Attempt ${i + 1} failed. Retrying in ${waitTime}ms...`);
@@ -55,7 +55,7 @@ export async function fetchFromTmdb(endpoint: string, params: Record<string, any
       }
     }
   }
-  
+
   throw lastError || new Error("Failed to fetch from TMDB after retries");
 }
 
@@ -68,7 +68,7 @@ export const fetchPopularMovieIds = action({
     try {
       const response = await fetchFromTmdb('/movie/popular', { page: args.page });
       const movies = response.results || [];
-      
+
       return {
         success: true,
         ids: movies.map((m: any) => m.id),
@@ -94,7 +94,7 @@ export const fetchTopRatedMovieIds = action({
     try {
       const response = await fetchFromTmdb('/movie/top_rated', { page: args.page });
       const movies = response.results || [];
-      
+
       return {
         success: true,
         ids: movies.map((m: any) => m.id),
@@ -113,9 +113,9 @@ export const fetchTopRatedMovieIds = action({
 });
 
 export async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promise<DbMovieStructure> {
-  // Get extended movie details (with credits, images)
-  const movieDetails = await fetchFromTmdb(`/movie/${movie.id}`, { append_to_response: 'credits,videos,keywords,release_dates,images' });
-  
+  // Get extended movie details (with credits)
+  const movieDetails = await fetchFromTmdb(`/movie/${movie.id}`, { append_to_response: 'credits,videos,keywords,release_dates' });
+
   // Extract directors from crew
   const directors = movieDetails.credits?.crew
     .filter((person: any) => person.job === 'Director')
@@ -154,20 +154,9 @@ export async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse):
   }
 
   // Extract trailer URL if available
-  const trailer = movieDetails.videos?.results?.find((video: any) => 
+  const trailer = movieDetails.videos?.results?.find((video: any) =>
     video.type === 'Trailer' && video.site === 'YouTube'
   );
-
-  // Process images - get top 10 posters and top 30 backdrops (sorted by vote_average)
-  const posters = (movieDetails.images?.posters || [])
-    .sort((a: any, b: any) => b.vote_average - a.vote_average)
-    .slice(0, 10)
-    .map((image: any) => image.file_path);
-
-  const backdrops = (movieDetails.images?.backdrops || [])
-    .sort((a: any, b: any) => b.vote_average - a.vote_average)
-    .slice(0, 30)
-    .map((image: any) => image.file_path);
 
   return {
     title: movieDetails.title,
@@ -210,8 +199,8 @@ export async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse):
     tmdb_data_imported_at: new Date().toISOString(),
     imdb_id: movieDetails.imdb_id || '',
     screenshots: [], // TMDB doesn't provide screenshots directly
-    posters,
-    backdrops,
+    screenshot_id_list: [],
+    screenshot_url: '',
     trailer_url: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : '',
     main_poster: movieDetails.poster_path,
     main_backdrop: movieDetails.backdrop_path,
@@ -226,9 +215,9 @@ export const fetchTmdbGenres = action({
   handler: async (ctx, args) => {
     try {
       console.log('Fetching TMDB genres');
-      
+
       const genres = await fetchFromTmdb('/genre/movie/list');
-      
+
       // Save genres to local file for reference
       const genresData = {
         genres: genres.genres,
@@ -257,28 +246,28 @@ export const updateExistingMovies = action({
   handler: async (ctx) => {
     try {
       console.log('Starting update of all existing movies...');
-      
+
       // Get all movies from the database
       const movies = await ctx.runQuery(internal.movies.getAllMovies);
       console.log(`Found ${movies.length} movies to update.`);
-      
+
       let updatedCount = 0;
       let failedCount = 0;
       const errors: any[] = [];
-      
+
       // Iterate and update each movie
       for (const movie of movies) {
         console.log(`Updating movie: ${movie.title} (ID: ${movie._id}, TMDB ID: ${movie.tmdb_id})`);
-        
+
         try {
           const result = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveMovie, {
             tmdbId: movie.tmdb_id
           });
-          
+
           if (result.success && result.movieData) {
             const dbData = result.movieData.db_structure_data;
-            
-            console.log(`Data ready for ${movie.title} - Posters: ${dbData.posters?.length || 0}, Backdrops: ${dbData.backdrops?.length || 0}`);
+
+            console.log(`Data ready for ${movie.title}`);
 
             // Save the data to the database
             await ctx.runMutation(internal.movies.updateMovie, {
@@ -287,8 +276,6 @@ export const updateExistingMovies = action({
               popularity: dbData.popularity,
               vote_count_system: dbData.vote_count_system,
               vote_pts_system: dbData.vote_pts_system,
-              posters: dbData.posters,
-              backdrops: dbData.backdrops,
               tmdb_data_imported_at: new Date().toISOString(),
               main_poster: dbData.main_poster,
               main_backdrop: dbData.main_backdrop
@@ -316,7 +303,7 @@ export const updateExistingMovies = action({
           });
         }
       }
-      
+
       return {
         success: true,
         total: movies.length,

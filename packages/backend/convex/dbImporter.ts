@@ -48,11 +48,11 @@ export const createMovieFromTmdbData = mutation({
     tmdb_data_imported_at: v.string(),
     imdb_id: v.string(),
     screenshots: v.array(v.string()),
+    screenshot_id_list: v.optional(v.array(v.string())),
+    screenshot_url: v.optional(v.string()),
     trailer_url: v.string(),
-    main_poster: v.optional(v.string()),
-    main_backdrop: v.optional(v.string()),
-    posters: v.optional(v.array(v.string())),
-    backdrops: v.optional(v.array(v.string())),
+    main_poster: v.optional(v.union(v.string(), v.null())),
+    main_backdrop: v.optional(v.union(v.string(), v.null())),
     created_at: v.string(),
     updated_at: v.string(),
   },
@@ -63,25 +63,26 @@ export const createMovieFromTmdbData = mutation({
       .withIndex("by_tmdb_id", (q) => q.eq("tmdb_id", args.tmdb_id))
       .unique();
 
+    // Clean up vote_count_system and vote_pts_system data to match schema (remove undefined values)
+    const cleanedVoteCountSystem = {
+      tmdb: args.vote_count_system.tmdb,
+      imdb: args.vote_count_system.imdb ?? null,
+      letterboxd: args.vote_count_system.letterboxd ?? null,
+      metacritic: args.vote_count_system.metacritic ?? null,
+      rotten_tomatoes: args.vote_count_system.rotten_tomatoes ?? null,
+    };
+    
+    const cleanedVotePtsSystem = {
+      tmdb: args.vote_pts_system.tmdb,
+      imdb: args.vote_pts_system.imdb ?? null,
+      letterboxd: args.vote_pts_system.letterboxd ?? null,
+      metacritic: args.vote_pts_system.metacritic ?? null,
+      rotten_tomatoes: args.vote_pts_system.rotten_tomatoes ?? null,
+    };
+
     if (existingMovie) {
       // Update existing movie instead of creating duplicate
-      // Clean up vote_count_system data to match schema (remove undefined values)
       const { vote_count_system, vote_pts_system, ...otherArgs } = args;
-      const cleanedVoteCountSystem = {
-        tmdb: vote_count_system.tmdb,
-        imdb: vote_count_system.imdb ?? null,
-        letterboxd: vote_count_system.letterboxd ?? null,
-        metacritic: vote_count_system.metacritic ?? null,
-        rotten_tomatoes: vote_count_system.rotten_tomatoes ?? null,
-      };
-      
-      const cleanedVotePtsSystem = {
-        tmdb: vote_pts_system.tmdb,
-        imdb: vote_pts_system.imdb ?? null,
-        letterboxd: vote_pts_system.letterboxd ?? null,
-        metacritic: vote_pts_system.metacritic ?? null,
-        rotten_tomatoes: vote_pts_system.rotten_tomatoes ?? null,
-      };
       
       await ctx.db.patch(existingMovie._id, {
         ...otherArgs,
@@ -101,12 +102,14 @@ export const createMovieFromTmdbData = mutation({
     // Create new movie
     const movieId = await ctx.db.insert("movies", {
       ...args,
+      vote_count_system: cleanedVoteCountSystem,
+      vote_pts_system: cleanedVotePtsSystem,
       // Handle optional fields by providing defaults
       main_poster: args.main_poster ?? "",
       main_backdrop: args.main_backdrop ?? "",
       screenshots: args.screenshots ?? [],
-      posters: args.posters,
-      backdrops: args.backdrops,
+      screenshot_id_list: args.screenshot_id_list ?? [],
+      screenshot_url: args.screenshot_url ?? "",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

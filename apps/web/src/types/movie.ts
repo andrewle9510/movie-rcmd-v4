@@ -12,8 +12,6 @@ export interface Movie {
   director?: string;
   cast?: string[];
   tmdbId?: number;
-  posters?: string[];
-  backdrops?: string[];
 }
 
 export interface MovieSearchParams {

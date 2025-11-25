@@ -15,8 +15,8 @@
     "dev:server": "turbo -F @movie-rcmd-v4/backend dev",
     "dev:setup": "turbo -F @movie-rcmd-v4/backend dev:setup"
   },
-  "dependencies": {},
   "devDependencies": {
+    "dotenv": "^17.2.3",
     "turbo": "^2.5.4"
   },
   "packageManager": "npm@11.6.2"

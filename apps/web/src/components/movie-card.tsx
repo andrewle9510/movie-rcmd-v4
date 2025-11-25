@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Movie } from "@/types/movie";
 import { MovieCardSkeleton } from "./movie-card-skeleton";
-import { UIConfig } from "@/config/movie-browsing-ui-config";
+import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
 
 export type GridSize = "small" | "medium" | "large";
 
@@ -61,7 +61,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
     return {
       position: "relative" as const,
       width: "100%",
-      paddingTop: UIConfig.card.aspectRatio,
+      paddingTop: MovieBrowsingUIConfig.card.aspectRatio,
       overflow: "hidden"
     };
   };
@@ -75,18 +75,18 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
 
   const renderCardContent = () => {
     // Skip rendering content if globally disabled in config and not in list view
-    if (!UIConfig.card.showInfo && viewMode !== "list") {
+    if (!MovieBrowsingUIConfig.card.showInfo && viewMode !== "list") {
       return null;
     }
 
     const commonInfo = (
       <div style={{ 
-        padding: gridSize === "small" ? UIConfig.card.padding.small : gridSize === "large" ? UIConfig.card.padding.large : UIConfig.card.padding.medium
+        padding: gridSize === "small" ? MovieBrowsingUIConfig.card.padding.small : gridSize === "large" ? MovieBrowsingUIConfig.card.padding.large : MovieBrowsingUIConfig.card.padding.medium
       }}>
         <h3 style={{ 
           fontWeight: "bold",
           lineHeight: "1.25",
-          marginBottom: UIConfig.card.infoSpacing,
+          marginBottom: MovieBrowsingUIConfig.card.infoSpacing,
           fontSize: viewMode === "list" ? "1rem" : 
                    gridSize === "small" ? "0.875rem" : 
                    gridSize === "large" ? "1.25rem" : 
@@ -99,7 +99,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
           {movie.title}
         </h3>
         
-        {UIConfig.card.showDescription && gridSize !== "small" && viewMode === "grid" && (
+        {MovieBrowsingUIConfig.card.showDescription && gridSize !== "small" && viewMode === "grid" && (
           <p style={{ 
             color: "#6b7280",
             fontSize: "0.875rem",
@@ -163,7 +163,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
             <span style={{ color: "#6b7280" }}>
               {new Date(movie.releaseDate).getFullYear()}
             </span>
-          {UIConfig.card.showRating && movie.rating && (
+          {MovieBrowsingUIConfig.card.showRating && movie.rating && (
             <span style={{ 
               color: "#d97706",
               fontWeight: "500",
@@ -175,11 +175,11 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
           )}
         </div>
         
-        {UIConfig.card.showDuration && movie.duration && (
+        {MovieBrowsingUIConfig.card.showDuration && movie.duration && (
           <div style={{ 
             fontSize: "0.75rem", 
             color: "#6b7280",
-            marginBottom: UIConfig.card.infoSpacing,
+            marginBottom: MovieBrowsingUIConfig.card.infoSpacing,
             display: "flex",
             alignItems: "center"
           }}>
@@ -187,7 +187,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
           </div>
         )}
         
-        {UIConfig.card.showWatchlistButton && (gridSize === "large" || viewMode === "list") && (
+        {MovieBrowsingUIConfig.card.showWatchlistButton && (gridSize === "large" || viewMode === "list") && (
           <button 
             onClick={(e) => {
               e.preventDefault();
@@ -196,7 +196,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
             }}
             style={{
               width: "100%",
-              marginTop: UIConfig.card.infoSpacing,
+              marginTop: MovieBrowsingUIConfig.card.infoSpacing,
               padding: "0.25rem 0.75rem",
               border: "1px solid #d1d5db",
               borderRadius: "0.375rem",

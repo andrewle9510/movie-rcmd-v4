@@ -27,15 +27,6 @@ export function transformMovieData(movie: any): Movie {
     hasBackdrop: !!backdropUrl
   });
 
-  // Ensure posters and backdrops are arrays of strings
-  const posters = Array.isArray(movie.posters) 
-    ? movie.posters.filter((p: any) => typeof p === 'string')
-    : [];
-
-  const backdrops = Array.isArray(movie.backdrops)
-    ? movie.backdrops.filter((p: any) => typeof p === 'string')
-    : [];
-
   return {
     _id: movie._id,
     title: movie.title,
@@ -50,7 +41,5 @@ export function transformMovieData(movie: any): Movie {
     director: undefined,
     cast: movie.cast || [],
     tmdbId: movie.tmdb_id,
-    posters,
-    backdrops,
   };
 }

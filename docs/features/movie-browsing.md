@@ -3,18 +3,18 @@
 ## File Inventory
 
 ### Core Files:
-- `apps/web/src/app/movies/page.tsx` - Main movies page component that renders the movie grid. Now fully styled with Tailwind CSS v4.
-- `apps/web/src/app/movies/layout.tsx` - Layout wrapper for the movies section
-- `apps/web/src/components/movie-card.tsx` - Component for displaying individual movie cards
+- `apps/web/src/app/movies/page.tsx` - Main movies page component that renders the movie grid. Fully styled with Tailwind CSS v4.
+- `apps/web/src/app/movies/layout.tsx` - Layout wrapper for the movies section that provides consistent structure
+- `apps/web/src/components/movie-card.tsx` - Component for displaying individual movie cards with poster, title, and metadata
 - `apps/web/src/components/movie-card-skeleton.tsx` - Loading skeleton component for movie cards
-- `apps/web/src/hooks/use-movies.ts` - Custom hook for fetching and managing movie data
-- `apps/web/src/types/movie.ts` - TypeScript type definitions for movie entities
+- `apps/web/src/hooks/use-movies.ts` - Custom hook for fetching and managing movie data with loading states
+- `apps/web/src/types/movie.ts` - TypeScript type definitions for movie entities ensuring type safety
+- `apps/web/src/lib/movie-utils.ts` - Utility functions for movie data processing including formatting and transformations
 
 ### Supporting Files:
-- `apps/web/src/components/grid-controls.tsx` - UI controls for grid manipulation (view mode, sort, filter). Styled with Tailwind CSS v4.
-- `apps/web/src/components/pagination-controls.tsx` - Component for browsing through pages of movies. Styled with Tailwind CSS v4.
-- `apps/web/src/lib/movie-utils.ts` - Utility functions for movie data processing
-- `apps/web/src/config/movie-browsing-ui-config.ts` - Centralized configuration for UI elements in the movie browsing experience
+- `apps/web/src/components/grid-controls.tsx` - UI controls for grid manipulation (view mode, sort, filter). Refactored to use standard Tailwind classes.
+- `apps/web/src/components/pagination-controls.tsx` - Component for browsing through pages of movies. Refactored to use standard Tailwind classes.
+- `apps/web/src/config/movie-browsing-ui-config.ts` - Centralized configuration for UI elements in the movie browsing experience, defining layout dimensions and visual properties
 
 ## Functioning Purpose
 

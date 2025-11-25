@@ -2,6 +2,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { DbMovieStructure } from "./movieDataInterfaces";
+import { parseScreenshotData } from "./lib/utils";
 
 // Direct import workflow: Fetch from TMDB and import directly to Convex database
 export const runTmdbDirectImportWorkflow = action({
@@ -93,6 +94,96 @@ export const runTmdbDirectImportWorkflow = action({
   }
 });
 
+export const importMovieFromLocalJson = action({
+  args: {
+    tmdbId: v.number(),
+    url: v.optional(v.string()),
+    image_id_list: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    try {
+      // 1. Parse screenshot data if available
+      let screenshotData = { screenshot_url: "", screenshot_id_list: [] as string[] };
+      if (args.url && args.image_id_list) {
+        screenshotData = parseScreenshotData(args.url, args.image_id_list);
+      }
+
+      // 2. Fetch and Save Movie (gets TMDB data)
+      const fetchResult = await ctx.runAction(internal.tmdbLocalFetch.fetchAndSaveMovie, {
+        tmdbId: args.tmdbId
+      });
+
+      if (!fetchResult.success || !fetchResult.movieData) {
+        throw new Error(fetchResult.error || fetchResult.message || "Failed to fetch movie data");
+      }
+
+      const dbStructureData = fetchResult.movieData.db_structure_data;
+
+      // 3. Merge screenshot data
+      if (screenshotData.screenshot_url) {
+          dbStructureData.screenshot_url = screenshotData.screenshot_url;
+      }
+      if (screenshotData.screenshot_id_list.length > 0) {
+          dbStructureData.screenshot_id_list = screenshotData.screenshot_id_list;
+      }
+
+      // 4. Import to Convex
+      const importResult = await ctx.runMutation(internal.dbImporter.createMovieFromTmdbData, {
+        title: dbStructureData.title,
+        original_title: dbStructureData.original_title,
+        slug: dbStructureData.slug,
+        synopsis: dbStructureData.synopsis,
+        tagline: dbStructureData.tagline,
+        belong_to_collection: dbStructureData.belong_to_collection,
+        popularity: dbStructureData.popularity,
+        status: dbStructureData.status,
+        release_date: dbStructureData.release_date,
+        runtime_minutes: dbStructureData.runtime_minutes,
+        directors: dbStructureData.directors,
+        cast: dbStructureData.cast,
+        production_studio: dbStructureData.production_studio,
+        country: dbStructureData.country,
+        genres: dbStructureData.genres,
+        mood: dbStructureData.mood,
+        keywords: dbStructureData.keywords,
+        original_language: dbStructureData.original_language,
+        language: dbStructureData.language,
+        mpaa_rating: dbStructureData.mpaa_rating,
+        vote_pts_system: dbStructureData.vote_pts_system,
+        vote_count_system: dbStructureData.vote_count_system,
+        budget: dbStructureData.budget,
+        revenue: dbStructureData.revenue,
+        tmdb_id: dbStructureData.tmdb_id,
+        tmdb_data_imported_at: dbStructureData.tmdb_data_imported_at,
+        imdb_id: dbStructureData.imdb_id,
+        screenshots: dbStructureData.screenshots,
+        screenshot_id_list: dbStructureData.screenshot_id_list,
+        screenshot_url: dbStructureData.screenshot_url,
+        trailer_url: dbStructureData.trailer_url,
+        main_poster: dbStructureData.main_poster,
+        main_backdrop: dbStructureData.main_backdrop,
+        created_at: dbStructureData.created_at,
+        updated_at: dbStructureData.updated_at,
+      });
+
+      return {
+        success: true,
+        tmdbId: args.tmdbId,
+        importResult,
+        message: `Successfully imported movie ${args.tmdbId} with screenshots`
+      };
+
+    } catch (error) {
+      console.error(`Error importing movie ${args.tmdbId} from local JSON: ${error}`);
+      return {
+        success: false,
+        tmdbId: args.tmdbId,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+});
+
 async function processSingleMovie(ctx: any, tmdbId: number) {
   try {
       // Step 1: Fetch and normalize data using the shared fetcher (includes retries)
@@ -136,11 +227,11 @@ async function processSingleMovie(ctx: any, tmdbId: number) {
         tmdb_data_imported_at: dbStructureData.tmdb_data_imported_at,
         imdb_id: dbStructureData.imdb_id,
         screenshots: dbStructureData.screenshots,
+        screenshot_id_list: dbStructureData.screenshot_id_list,
+        screenshot_url: dbStructureData.screenshot_url,
         trailer_url: dbStructureData.trailer_url,
         main_poster: dbStructureData.main_poster,
         main_backdrop: dbStructureData.main_backdrop,
-        posters: dbStructureData.posters,
-        backdrops: dbStructureData.backdrops,
         created_at: dbStructureData.created_at,
         updated_at: dbStructureData.updated_at,
       });

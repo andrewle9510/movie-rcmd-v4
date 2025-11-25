@@ -2,7 +2,7 @@
 // This config controls the layout, grid, and movie card appearance
 // making it easy to adjust the visual design without modifying components
 
-export const UIConfig = {
+export const MovieBrowsingUIConfig = {
   // Layout configuration for the main movie browsing page
   layout: {
     containerMaxWidth: "1200px", // Maximum width of the main content container

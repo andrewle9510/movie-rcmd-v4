@@ -18,11 +18,11 @@ export default defineSchema({
     revenue: v.number(),
     popularity: v.number(),
     mpaa_rating: v.string(),
-    main_poster: v.string(),
-    main_backdrop: v.string(),
-    posters: v.optional(v.array(v.string())),
-    backdrops: v.optional(v.array(v.string())),
+    main_poster: v.optional(v.string()),
+    main_backdrop: v.optional(v.string()),
     screenshots: v.array(v.any()),
+    screenshot_id_list: v.optional(v.array(v.string())),
+    screenshot_url: v.optional(v.string()),
     trailer_url: v.string(),
     cast: v.array(v.number()),
     directors: v.array(v.number()),
@@ -34,10 +34,10 @@ export default defineSchema({
     mood: v.array(v.any()),
     belong_to_collection: v.union(
       v.object({
-        backdrop_path: v.string(),
+        backdrop_path: v.union(v.string(), v.null()),
         id: v.number(),
         name: v.string(),
-        poster_path: v.string(),
+        poster_path: v.union(v.string(), v.null()),
       }),
       v.null()
     ),

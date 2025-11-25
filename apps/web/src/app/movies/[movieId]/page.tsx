@@ -30,9 +30,6 @@ export default function MovieDetailPage() {
     // Use manual file path if provided
     const posterPath = imageConfig.posterFilepath;
     activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
-  } else if (imageConfig?.posterIndex !== undefined && movie.posters && movie.posters[imageConfig.posterIndex]) {
-    const posterPath = movie.posters[imageConfig.posterIndex];
-    activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
   }
 
   // Resolve Backdrop URL
@@ -40,10 +37,6 @@ export default function MovieDetailPage() {
   if (imageConfig?.backdropFilepath) {
     // Use manual file path if provided
     const backdropPath = imageConfig.backdropFilepath;
-    activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
-  } else if (imageConfig?.backdropIndex !== undefined && movie.backdrops && movie.backdrops[imageConfig.backdropIndex]) {
-    // Use index from stored backdrops if provided
-    const backdropPath = movie.backdrops[imageConfig.backdropIndex];
     activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
   }
 

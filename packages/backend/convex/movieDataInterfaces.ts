@@ -134,8 +134,8 @@ export interface DbMovieStructure {
   tmdb_data_imported_at: string;
   imdb_id: string;
   screenshots: string[];
-  posters?: string[];
-  backdrops?: string[];
+  screenshot_id_list?: string[];
+  screenshot_url?: string;
   trailer_url: string;
   main_poster: string | undefined;
   main_backdrop: string | undefined;
