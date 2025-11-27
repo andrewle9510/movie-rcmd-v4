@@ -48,3 +48,6 @@ coverage
 .cache
 tmp
 temp
+
+# Test data
+test_data/
