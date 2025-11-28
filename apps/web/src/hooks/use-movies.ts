@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { transformMovieData } from "@/lib/movie-utils";
 import type { Movie } from "@/types/movie";
 import { useMemo } from "react";
+import { useMoviesContext } from "@/providers/MoviesProvider";
 
 interface UseMoviesParams {
   searchQuery?: string;
@@ -13,8 +14,8 @@ interface UseMoviesParams {
 }
 
 export function useMovies({ searchQuery, genreFilter, limit = 20 }: UseMoviesParams = {}) {
-  const convexMovies = useQuery(api.api.getMovies);
-  
+  const { movies: convexMovies, isLoading: convexLoading, error: convexError } = useMoviesContext();
+
   const { movies, isLoading, error } = useMemo(() => {
     if (convexMovies === undefined) {
       return { movies: undefined, isLoading: true, error: false };
@@ -26,15 +27,15 @@ export function useMovies({ searchQuery, genreFilter, limit = 20 }: UseMoviesPar
 
     try {
       const processedMovies: Movie[] = convexMovies.map(transformMovieData);
-      
+
       let filteredMovies = processedMovies;
-      
+
       if (searchQuery) {
         filteredMovies = filteredMovies.filter(movie =>
           movie.title.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
-      
+
       if (genreFilter) {
         const genreId = parseInt(genreFilter);
         if (!isNaN(genreId)) {
@@ -43,17 +44,17 @@ export function useMovies({ searchQuery, genreFilter, limit = 20 }: UseMoviesPar
           );
         } else {
           filteredMovies = filteredMovies.filter(movie =>
-            movie.genres.some((g: any) => 
+            movie.genres.some((g: any) =>
               typeof g === 'string' && g.toLowerCase().includes(genreFilter.toLowerCase())
             )
           );
         }
       }
-      
+
       if (limit) {
         filteredMovies = filteredMovies.slice(0, limit);
       }
-      
+
       return { movies: filteredMovies, isLoading: false, error: false };
     } catch (err) {
       console.error("Error processing movie data:", err);

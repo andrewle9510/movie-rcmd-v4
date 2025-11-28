@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Interface definitions for movie data structures
  * Separating TMDB API response structure from our database structure

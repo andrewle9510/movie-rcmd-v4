@@ -15,10 +15,37 @@ export default function MoviesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Read page from sessionStorage on mount
+  useEffect(() => {
+    const stored = sessionStorage.getItem('movie-page');
+    if (stored) {
+      const page = parseInt(stored, 10);
+      if (!isNaN(page) && page > 0) {
+        setCurrentPage(page);
+      }
+    }
+  }, []);
+
+  // Save page to sessionStorage when it changes
+  useEffect(() => {
+    sessionStorage.setItem('movie-page', currentPage.toString());
+  }, [currentPage]);
+
   const { movies, isLoading, error } = useMovies({
     searchQuery,
     limit: 100, // Get more items for pagination
   });
+
+  // Calculate pagination
+  const filteredMovies = movies || [];
+  const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
+
+  // Validate page number against totalPages
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages]);
 
   const handleSeeding = async () => {
     try {
@@ -58,9 +85,6 @@ export default function MoviesPage() {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  // Calculate pagination
-  const filteredMovies = movies || [];
-  const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedMovies = filteredMovies.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 

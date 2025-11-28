@@ -36,11 +36,7 @@ export function Navbar() {
               🎬 Movies
             </Link>
           </li>
-          <li>
-            <Link href="/watchlist" className="text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline">
-              ❤️ Watchlist
-            </Link>
-          </li>
+
         </ul>
 
         <div className="flex items-center gap-2">
@@ -94,15 +90,7 @@ export function Navbar() {
                 🎬 Movies
               </Link>
             </li>
-            <li>
-              <Link 
-                href="/watchlist" 
-                className="block text-foreground font-medium px-3 py-2 rounded-md hover:text-primary hover:bg-secondary transition-colors no-underline"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                ❤️ Watchlist
-              </Link>
-            </li>
+
           </ul>
           <form onSubmit={handleSearch} className="mt-4 flex items-center gap-2">
             <input

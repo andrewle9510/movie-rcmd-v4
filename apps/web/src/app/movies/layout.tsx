@@ -1,14 +1,18 @@
+import { MoviesProvider } from "@/providers/MoviesProvider";
+
 export default function MoviesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* <Navbar /> */}
-      <main className="flex-1">
-        {children}
-      </main>
-    </div>
+    <MoviesProvider>
+      <div className="min-h-screen flex flex-col">
+        {/* <Navbar /> */}
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
+    </MoviesProvider>
   );
 }
