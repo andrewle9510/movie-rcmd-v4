@@ -195,73 +195,170 @@ export const createMovie = mutation({
   },
 });
 
-// Update an existing movie
-export const updateMovie = mutation({
-  args: {
-    id: v.id("movies"),
-    title: v.optional(v.string()),
-    original_title: v.optional(v.string()),
-    slug: v.optional(v.string()),
-    synopsis: v.optional(v.string()),
-    tagline: v.optional(v.string()),
-    belong_to_collection: v.optional(v.any()),
-    popularity: v.optional(v.number()),
-    status: v.optional(v.string()),
-    release_date: v.optional(v.string()),
-    runtime_minutes: v.optional(v.number()),
-    directors: v.optional(v.array(v.number())),
-    cast: v.optional(v.array(v.number())),
-    production_studio: v.optional(v.array(v.number())),
-    country: v.optional(v.array(v.string())),
-    genres: v.optional(v.array(v.number())),
-    mood: v.optional(v.array(v.number())),
-    keywords: v.optional(v.array(v.number())),
-    original_language: v.optional(v.string()),
-    language: v.optional(v.array(v.string())),
-    mpaa_rating: v.optional(v.string()),
-    vote_pts_system: v.optional(v.object({
-      tmdb: v.number(),
-      imdb: v.optional(v.union(v.number(), v.null())),
-      letterboxd: v.optional(v.union(v.number(), v.null())),
-      rotten_tomatoes: v.optional(v.union(v.number(), v.null())),
-      metacritic: v.optional(v.union(v.number(), v.null()))
-    })),
-    vote_count_system: v.optional(v.object({
-      tmdb: v.number(),
-      imdb: v.optional(v.union(v.number(), v.null())),
-      letterboxd: v.optional(v.union(v.number(), v.null())),
-      rotten_tomatoes: v.optional(v.union(v.number(), v.null())),
-      metacritic: v.optional(v.union(v.number(), v.null()))
-    })),
-    budget: v.optional(v.number()),
-    revenue: v.optional(v.number()),
-    tmdb_id: v.optional(v.number()),
-    tmdb_data_imported_at: v.optional(v.string()),
-    imdb_id: v.optional(v.string()),
-    screenshots: v.optional(v.array(v.string())),
-    screenshot_id_list: v.optional(v.array(v.string())),
-    screenshot_url: v.optional(v.string()),
-    trailer_url: v.optional(v.string()),
-    main_poster: v.optional(v.union(v.string(), v.null())),
-    main_backdrop: v.optional(v.union(v.string(), v.null())),
-  },
-  handler: async (ctx, args) => {
-    const { id, ...updateFields } = args;
-    
-    // Only update fields that were provided
-    const movie = await ctx.db.get(id);
-    if (!movie) {
-      throw new Error("Movie not found");
-    }
-    
-    // Construct the update object with only the fields that are defined
-    const updates = {
-      ...Object.fromEntries(
-        Object.entries(updateFields).filter(([_, value]) => value !== undefined)
-      ),
-      updated_at: new Date().toISOString(),
-    };
-    
-    return await ctx.db.patch(id, updates);
-  },
-});
+  // Update an existing movie
+  export const updateMovie = mutation({
+    args: {
+      id: v.id("movies"),
+      title: v.optional(v.string()),
+      original_title: v.optional(v.string()),
+      slug: v.optional(v.string()),
+      synopsis: v.optional(v.string()),
+      tagline: v.optional(v.string()),
+      belong_to_collection: v.optional(v.any()),
+      popularity: v.optional(v.number()),
+      status: v.optional(v.string()),
+      release_date: v.optional(v.string()),
+      runtime_minutes: v.optional(v.number()),
+      directors: v.optional(v.array(v.number())),
+      cast: v.optional(v.array(v.number())),
+      production_studio: v.optional(v.array(v.number())),
+      country: v.optional(v.array(v.string())),
+      genres: v.optional(v.array(v.number())),
+      mood: v.optional(v.array(v.number())),
+      keywords: v.optional(v.array(v.number())),
+      original_language: v.optional(v.string()),
+      language: v.optional(v.array(v.string())),
+      mpaa_rating: v.optional(v.string()),
+      vote_pts_system: v.optional(v.object({
+        tmdb: v.number(),
+        imdb: v.optional(v.union(v.number(), v.null())),
+        letterboxd: v.optional(v.union(v.number(), v.null())),
+        rotten_tomatoes: v.optional(v.union(v.number(), v.null())),
+        metacritic: v.optional(v.union(v.number(), v.null()))
+      })),
+      vote_count_system: v.optional(v.object({
+        tmdb: v.number(),
+        imdb: v.optional(v.union(v.number(), v.null())),
+        letterboxd: v.optional(v.union(v.number(), v.null())),
+        rotten_tomatoes: v.optional(v.union(v.number(), v.null())),
+        metacritic: v.optional(v.union(v.number(), v.null()))
+      })),
+      budget: v.optional(v.number()),
+      revenue: v.optional(v.number()),
+      tmdb_id: v.optional(v.number()),
+      tmdb_data_imported_at: v.optional(v.string()),
+      imdb_id: v.optional(v.string()),
+      screenshots: v.optional(v.array(v.string())),
+      screenshot_id_list: v.optional(v.array(v.string())),
+      screenshot_url: v.optional(v.string()),
+      trailer_url: v.optional(v.string()),
+      main_poster: v.optional(v.union(v.string(), v.null())),
+      main_backdrop: v.optional(v.union(v.string(), v.null())),
+    },
+    handler: async (ctx, args) => {
+      const { id, ...updateFields } = args;
+      
+      // Only update fields that were provided
+      const movie = await ctx.db.get(id);
+      if (!movie) {
+        throw new Error("Movie not found");
+      }
+      
+      // Construct the update object with only the fields that are defined
+      const updates = {
+        ...Object.fromEntries(
+          Object.entries(updateFields).filter(([_, value]) => value !== undefined)
+        ),
+        updated_at: new Date().toISOString(),
+      };
+      
+      return await ctx.db.patch(id, updates);
+    },
+  });
+
+  // Get all movies (public query version)
+  export const getMovies = query({
+    handler: async (ctx) => {
+      return await ctx.db.query("movies").collect();
+    },
+  });
+
+  // Get movies with pagination
+  export const getMoviesPaginated = query({
+    args: { 
+      limit: v.optional(v.number()),
+      offset: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+      const limit = args.limit || 20;
+      const offset = args.offset || 0;
+      
+      const allMovies = await ctx.db.query("movies").collect();
+      return allMovies.slice(offset, offset + limit);
+    },
+  });
+
+  // Get featured movies (top rated)
+  export const getFeaturedMovies = query({
+    args: { limit: v.optional(v.number()) },
+    handler: async (ctx, args) => {
+      const limit = args.limit || 10;
+      const movies = await ctx.db.query("movies").collect();
+      
+      // Sort by TMDB rating
+      const sorted = movies.sort((a, b) => {
+        const ratingA = a.vote_pts_system.tmdb || 0;
+        const ratingB = b.vote_pts_system.tmdb || 0;
+        return ratingB - ratingA;
+      });
+      
+      return sorted.slice(0, limit);
+    },
+  });
+
+  // Get trending movies (by popularity)
+  export const getTrendingMovies = query({
+    args: { limit: v.optional(v.number()) },
+    handler: async (ctx, args) => {
+      const limit = args.limit || 10;
+      const movies = await ctx.db.query("movies").collect();
+      
+      // Sort by popularity
+      const sorted = movies.sort((a, b) => b.popularity - a.popularity);
+      
+      return sorted.slice(0, limit);
+    },
+  });
+
+  // Get new releases
+  export const getNewReleases = query({
+    args: { limit: v.optional(v.number()) },
+    handler: async (ctx, args) => {
+      const limit = args.limit || 10;
+      const movies = await ctx.db.query("movies").collect();
+      
+      // Sort by release date (newest first)
+      const sorted = movies.sort((a, b) => {
+        return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+      });
+      
+      return sorted.slice(0, limit);
+    },
+  });
+
+  // Get movie by slug
+  export const getMovieBySlug = query({
+    args: { slug: v.string() },
+    handler: async (ctx, args) => {
+      const movies = await ctx.db.query("movies").collect();
+      return movies.find(m => m.slug === args.slug);
+    },
+  });
+
+  // Get movies by genre
+  export const getMoviesByGenre = query({
+    args: { 
+      genreId: v.number(),
+      limit: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+      const limit = args.limit || 20;
+      const movies = await ctx.db.query("movies").collect();
+      
+      const filtered = movies.filter(movie => 
+        movie.genres.includes(args.genreId)
+      );
+      
+      return filtered.slice(0, limit);
+    },
+  });

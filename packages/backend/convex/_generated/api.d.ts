@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as api_ from "../api.js";
 import type * as dbImporter from "../dbImporter.js";
 import type * as execConvexImportTmdbWorkflow from "../execConvexImportTmdbWorkflow.js";
 import type * as execLocalImportTmdbWorkflow from "../execLocalImportTmdbWorkflow.js";
@@ -30,7 +29,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  api: typeof api_;
   dbImporter: typeof dbImporter;
   execConvexImportTmdbWorkflow: typeof execConvexImportTmdbWorkflow;
   execLocalImportTmdbWorkflow: typeof execLocalImportTmdbWorkflow;

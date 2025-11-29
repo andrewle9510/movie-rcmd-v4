@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MovieCard, type GridSize } from "@/components/movie-card";
 import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
-import { useMovies } from "@/hooks/use-movies";
+import { useMovies } from "@/hooks/use-movie-browsing";
 import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
 
 const ITEMS_PER_PAGE = 12;
@@ -13,18 +13,18 @@ export default function MoviesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [gridSize, setGridSize] = useState<GridSize>("medium");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Read page from sessionStorage on mount
-  useEffect(() => {
-    const stored = sessionStorage.getItem('movie-page');
-    if (stored) {
-      const page = parseInt(stored, 10);
-      if (!isNaN(page) && page > 0) {
-        setCurrentPage(page);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('movie-page');
+      if (stored) {
+        const page = parseInt(stored, 10);
+        if (!isNaN(page) && page > 0) {
+          return page;
+        }
       }
     }
-  }, []);
+    return 1;
+  });
 
   // Save page to sessionStorage when it changes
   useEffect(() => {
@@ -80,9 +80,15 @@ export default function MoviesPage() {
     };
   };
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search changes from non-empty to different non-empty
+  const prevSearchQuery = useRef(searchQuery);
+  
   useEffect(() => {
-    setCurrentPage(1);
+    // Only reset when we had a previous search and it's different
+    if (prevSearchQuery.current && prevSearchQuery.current !== searchQuery) {
+      setCurrentPage(1);
+    }
+    prevSearchQuery.current = searchQuery;
   }, [searchQuery]);
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

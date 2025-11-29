@@ -14,7 +14,7 @@ interface MoviesContextType {
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 
 export function MoviesProvider({ children }: { children: ReactNode }) {
-  const movies = useQuery(api.api.getMovies);
+  const movies = useQuery(api.movies.getMovies);
   const isLoading = movies === undefined;
   const error = false; // Convex handles errors differently, but for simplicity
 

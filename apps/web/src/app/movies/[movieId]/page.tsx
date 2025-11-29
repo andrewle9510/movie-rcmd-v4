@@ -1,6 +1,6 @@
 "use client";
 
-import { useMovie } from "@/hooks/use-movie";
+import { useMovie } from "@/hooks/use-movie-detail";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
