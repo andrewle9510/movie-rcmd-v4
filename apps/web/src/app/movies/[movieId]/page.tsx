@@ -3,7 +3,7 @@
 import { useMovie } from "@/hooks/use-movie-detail";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
 import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
 
@@ -11,13 +11,7 @@ export default function MovieDetailPage() {
   const params = useParams();
   const movieId = params.movieId as string;
   const { movie, isLoading, error } = useMovie(movieId);
-  const [isHydrated, setIsHydrated] = useState(false);
   const [backdropLoaded, setBackdropLoaded] = useState(false);
-
-  // Only render dynamic content after hydration to prevent SSR/client mismatch
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   if (error) {
     return (
@@ -75,18 +69,8 @@ export default function MovieDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Show skeleton loading while movie data is loading or not hydrated */}
-      {(!isHydrated || isLoading) && (
-        <div className="container py-10 text-center">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 rounded w-64 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-300 rounded w-48 mx-auto"></div>
-          </div>
-        </div>
-      )}
-      
-      {/* Movie content - only rendered when hydrated and movie data is available */}
-      {isHydrated && !isLoading && movie && (
+      {/* Movie content - rendered when movie data is available */}
+      {movie && (
         <>
         {/* 1. TOP BACKDROP SECTION - Taller & Cinematic */}
       <div 
