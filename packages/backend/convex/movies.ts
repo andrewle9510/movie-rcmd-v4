@@ -362,3 +362,22 @@ export const createMovie = mutation({
       return filtered.slice(0, limit);
     },
   });
+
+  // Get movies data version for cache management
+  export const getMoviesDataVersion = query({
+    handler: async (ctx) => {
+      // Get the latest movie timestamp from the database
+      const latestMovie = await ctx.db.query("movies")
+        .order("desc", { field: "updated_at" })
+        .first();
+      
+      // Get total count of movies
+      const allMovies = await ctx.db.query("movies").collect();
+      const totalMovies = allMovies.length;
+      
+      return {
+        moviesDataVersion: latestMovie?.updated_at || new Date().toISOString(),
+        totalMovies
+      };
+    }
+  });

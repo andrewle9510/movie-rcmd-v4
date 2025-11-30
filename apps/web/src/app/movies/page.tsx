@@ -38,9 +38,6 @@ export default function MoviesPage() {
     limit: 100, // Get more items for pagination
   });
 
-  // Get cache functionality
-  const { cacheStatus, forceRefresh } = useMoviesContext();
-
   // Calculate pagination
   const filteredMovies = movies || [];
   const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
@@ -193,22 +190,6 @@ export default function MoviesPage() {
           )}
         </div>
       )}
-
-      {/* Force Update Section */}
-      <div className="mt-16 flex flex-col items-center justify-center gap-1 pt-4">
-        <button
-          onClick={forceRefresh}
-          disabled={isLoading}
-          className="text-xs text-muted-foreground hover:text-foreground/60 transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          {isLoading ? "Updating..." : "🚨 force-refresh-movies-data 🚨"}
-        </button>
-        {cacheStatus.lastUpdated && (
-          <p className="text-xs text-muted-foreground/50">
-            Last updated: {new Date(cacheStatus.lastUpdated).toLocaleTimeString()}
-          </p>
-        )}
-      </div>
     </div>
   );
 }

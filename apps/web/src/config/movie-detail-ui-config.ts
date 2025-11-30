@@ -13,7 +13,7 @@ export const MovieDetailUIConfig = {
   // Backdrop configuration
   backdrop: {
     opacity: "1", // Opacity of the backdrop image (0 to 1). Set to "1" for full brightness.
-    fadeInDuration: "0.3s", // Duration of the fade-in animation when backdrop loads
+    fadeInDuration: "0.5s", // Duration of the fade-in animation when backdrop loads
     bottomFade: {
       enabled: true, // Turn on/off the bottom gradient fade
       height: "40%", // How much of the backdrop height is covered (e.g., "50%", "200px", "100%")

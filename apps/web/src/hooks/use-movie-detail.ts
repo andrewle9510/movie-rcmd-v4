@@ -5,21 +5,51 @@ import { api } from "@/convex/_generated/api";
 import { transformMovieData } from "@/lib/movie-utils";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useMoviesContext } from "@/providers/MoviesProvider";
+import { useMemo, useRef } from "react";
+import type { Movie } from "@/types/movie";
 
-export function useMovie(id: string) {
-  const isTmdbId = /^\d+$/.test(id);
-  const tmdbId = isTmdbId ? parseInt(id, 10) : null;
+interface MovieResult {
+  movie: Movie | undefined | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export function useMovie(id: string): MovieResult {
+  const isTmdbId = useMemo(() => /^\d+$/.test(id), [id]);
+  const tmdbId = useMemo(() => isTmdbId ? parseInt(id, 10) : null, [id, isTmdbId]);
 
   // First, try to find the movie in the MoviesProvider cache
-  const { findMovieById, findMovieByTmdbId, movies: cachedMovies } = useMoviesContext();
+  const { movies: cachedMovies } = useMoviesContext();
   
-  let cachedMovie = null;
-  if (cachedMovies) {
-    cachedMovie = isTmdbId ? findMovieByTmdbId(tmdbId!) : findMovieById(id);
+  // Memoize the cached movie lookup
+  const cachedMovie = useMemo(() => {
+    if (!cachedMovies) return null;
+    return isTmdbId 
+      ? cachedMovies.find((m: any) => m.tmdb_id === tmdbId)
+      : cachedMovies.find((m: any) => m._id === id);
+  }, [cachedMovies, id, isTmdbId, tmdbId]);
+
+  // Memoize the transformed cached movie separately - only recalculates when cachedMovie changes
+  const transformedCachedMovie = useMemo(() => {
+    if (!cachedMovie?._id) return null;
+    return transformMovieData(cachedMovie);
+  }, [cachedMovie]);
+
+  // Use ref to store stable cached result - prevents re-renders from Convex query updates
+  const cachedResultRef = useRef<MovieResult | null>(null);
+  
+  // Update ref only when transformed movie actually changes
+  if (transformedCachedMovie) {
+    if (!cachedResultRef.current || cachedResultRef.current.movie !== transformedCachedMovie) {
+      cachedResultRef.current = {
+        movie: transformedCachedMovie,
+        isLoading: false,
+        error: null
+      };
+    }
   }
 
-  // If found in cache, we still need to call hooks to preserve order, but we can ignore their results
-  const skipQuery = !!cachedMovie;
+  const skipQuery = !!transformedCachedMovie;
 
   // If not in cache, fallback to individual query
   const convexMovieById = useQuery(api.movies.getMovie, 
@@ -30,17 +60,12 @@ export function useMovie(id: string) {
     isTmdbId && tmdbId !== null && !skipQuery ? { tmdbId } : "skip"
   );
 
-  // Return cached movie if available
-  if (cachedMovie && cachedMovie._id) {
-    return { 
-      movie: transformMovieData(cachedMovie), 
-      isLoading: false, 
-      error: null 
-    };
+  // Return cached result if available - stable reference from ref
+  if (cachedResultRef.current) {
+    return cachedResultRef.current;
   }
 
-  
-
+  // Only compute from Convex results when no cache
   const convexMovie = isTmdbId ? convexMovieByTmdbId : convexMovieById;
 
   if (convexMovie === undefined) {
@@ -51,7 +76,9 @@ export function useMovie(id: string) {
     return { movie: null, isLoading: false, error: "Movie not found" };
   }
 
-  const movie = transformMovieData(convexMovie);
-
-  return { movie, isLoading: false, error: null };
+  return { 
+    movie: transformMovieData(convexMovie), 
+    isLoading: false, 
+    error: null 
+  };
 }

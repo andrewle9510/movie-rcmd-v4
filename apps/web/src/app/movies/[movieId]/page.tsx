@@ -10,8 +10,11 @@ import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-co
 export default function MovieDetailPage() {
   const params = useParams();
   const movieId = params.movieId as string;
-  const { movie, isLoading, error } = useMovie(movieId);
+  const result = useMovie(movieId);
+  const { movie, isLoading, error } = result;
   const [backdropLoaded, setBackdropLoaded] = useState(false);
+  
+  console.log("🎬 MovieDetailPage render, movie:", movie?.title, "isLoading:", isLoading);
 
   if (error) {
     return (

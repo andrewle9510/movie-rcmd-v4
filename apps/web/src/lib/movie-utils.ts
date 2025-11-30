@@ -1,13 +1,6 @@
 import type { Movie } from "@/types/movie";
 
 export function transformMovieData(movie: any): Movie {
-  console.log("🔍 Raw movie data:", {
-    title: movie.title,
-    tmdb_id: movie.tmdb_id,
-    main_poster: movie.main_poster,
-    main_backdrop: movie.main_backdrop,
-  });
-
   // Ensure main_poster and main_backdrop are strings before using them
   const mainPoster = typeof movie.main_poster === 'string' ? movie.main_poster : undefined;
   const mainBackdrop = typeof movie.main_backdrop === 'string' ? movie.main_backdrop : undefined;
@@ -19,13 +12,6 @@ export function transformMovieData(movie: any): Movie {
   const backdropUrl = mainBackdrop
     ? `https://image.tmdb.org/t/p/original${mainBackdrop.startsWith('/') ? '' : '/'}${mainBackdrop}`
     : undefined;
-
-  console.log("🎬 Transformed URLs:", { 
-    posterUrl, 
-    backdropUrl,
-    hasPoster: !!posterUrl,
-    hasBackdrop: !!backdropUrl
-  });
 
   return {
     _id: movie._id,
