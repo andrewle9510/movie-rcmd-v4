@@ -6,7 +6,6 @@ import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useMovies } from "@/hooks/use-movie-browsing";
 import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
-import { MovieRefreshButton } from "@/components/movie-refresh-button";
 import { useMoviesContext } from "@/providers/MoviesProvider";
 
 const ITEMS_PER_PAGE = 12;
@@ -70,13 +69,13 @@ export default function MoviesPage() {
         gap: MovieBrowsingUIConfig.grid.gap.medium
       };
     }
-    
-    const minWidth = gridSize === "small" 
-      ? MovieBrowsingUIConfig.grid.minColumnWidth.small 
-      : gridSize === "large" 
-        ? MovieBrowsingUIConfig.grid.minColumnWidth.large 
+
+    const minWidth = gridSize === "small"
+      ? MovieBrowsingUIConfig.grid.minColumnWidth.small
+      : gridSize === "large"
+        ? MovieBrowsingUIConfig.grid.minColumnWidth.large
         : MovieBrowsingUIConfig.grid.minColumnWidth.medium;
-        
+
     return {
       display: "grid",
       width: "100%",
@@ -87,7 +86,7 @@ export default function MoviesPage() {
 
   // Reset to page 1 when search changes from non-empty to different non-empty
   const prevSearchQuery = useRef(searchQuery);
-  
+
   useEffect(() => {
     // Only reset when we had a previous search and it's different
     if (prevSearchQuery.current && prevSearchQuery.current !== searchQuery) {
@@ -105,7 +104,7 @@ export default function MoviesPage() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
           <h2 className="text-lg font-bold mb-2">Error loading movies</h2>
           <p className="text-sm mb-2">There was a problem fetching the movie data.</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
           >
@@ -153,15 +152,15 @@ export default function MoviesPage() {
         <>
           <div style={getGridStyles()}>
             {paginatedMovies.map((movie) => (
-              <MovieCard 
-                key={movie._id} 
-                movie={movie} 
+              <MovieCard
+                key={movie._id}
+                movie={movie}
                 gridSize={gridSize}
                 viewMode={viewMode}
               />
             ))}
           </div>
-          
+
           <PaginationControls
             currentPage={currentPage}
             totalPages={totalPages}
@@ -179,11 +178,11 @@ export default function MoviesPage() {
               ? "Try adjusting your search criteria to find what you're looking for."
               : "No movies are available in the database at the moment."}
           </p>
-          
+
           {!searchQuery && (
             <div className="flex flex-col items-center gap-3">
-              <button 
-                onClick={handleSeeding} 
+              <button
+                onClick={handleSeeding}
                 className="px-6 py-3 bg-primary text-primary-foreground rounded-md font-medium shadow-lg hover:bg-primary/90 transition-all"
               >
                 Load Sample Movies
@@ -195,13 +194,19 @@ export default function MoviesPage() {
       )}
 
       {/* Force Update Section */}
-      <div className="mt-8 border-t pt-6">
-        <h3 className="text-lg font-semibold mb-4 text-center">Data Management</h3>
-        <MovieRefreshButton
-          onRefresh={forceRefresh}
-          isLoading={isLoading}
-          lastUpdated={cacheStatus.lastUpdated || undefined}
-        />
+      <div className="mt-16 flex flex-col items-center justify-center gap-1 pt-4">
+        <button
+          onClick={forceRefresh}
+          disabled={isLoading}
+          className="text-xs text-muted-foreground hover:text-foreground/60 transition-colors disabled:opacity-50 cursor-pointer"
+        >
+          {isLoading ? "Updating..." : "🚨 force-refresh-movies-data 🚨"}
+        </button>
+        {cacheStatus.lastUpdated && (
+          <p className="text-xs text-muted-foreground/50">
+            Last updated: {new Date(cacheStatus.lastUpdated).toLocaleTimeString()}
+          </p>
+        )}
       </div>
     </div>
   );
