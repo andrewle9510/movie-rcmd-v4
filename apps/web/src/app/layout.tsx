@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { CacheInitializer } from "@/components/cache-initializer";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={getBodyStyles}>
+        <CacheInitializer />
         <ConvexClientProvider>
           <div style={getMainContainerStyles}>
             {children}

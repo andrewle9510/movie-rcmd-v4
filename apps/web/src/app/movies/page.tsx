@@ -6,6 +6,8 @@ import { GridControls } from "@/components/grid-controls";
 import { PaginationControls } from "@/components/pagination-controls";
 import { useMovies } from "@/hooks/use-movie-browsing";
 import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
+import { MovieRefreshButton } from "@/components/movie-refresh-button";
+import { useMoviesContext } from "@/providers/MoviesProvider";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -35,6 +37,9 @@ export default function MoviesPage() {
     searchQuery,
     limit: 100, // Get more items for pagination
   });
+
+  // Get cache functionality
+  const { cacheStatus, forceRefresh } = useMoviesContext();
 
   // Calculate pagination
   const filteredMovies = movies || [];
@@ -188,6 +193,16 @@ export default function MoviesPage() {
           )}
         </div>
       )}
+
+      {/* Force Update Section */}
+      <div className="mt-8 border-t pt-6">
+        <h3 className="text-lg font-semibold mb-4 text-center">Data Management</h3>
+        <MovieRefreshButton
+          onRefresh={forceRefresh}
+          isLoading={isLoading}
+          lastUpdated={cacheStatus.lastUpdated || undefined}
+        />
+      </div>
     </div>
   );
 }

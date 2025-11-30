@@ -3,6 +3,7 @@
 import { useMovie } from "@/hooks/use-movie-detail";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
 import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
 
@@ -10,11 +11,28 @@ export default function MovieDetailPage() {
   const params = useParams();
   const movieId = params.movieId as string;
   const { movie, isLoading, error } = useMovie(movieId);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  if (isLoading) return <div className="container py-10 text-center">Loading...</div>;
-  if (!movie) return <div className="container py-10 text-center">Movie not found</div>;
+  // Only render dynamic content after hydration to prevent SSR/client mismatch
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
-  const releaseYear = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : null;
+  if (error) {
+    return (
+      <div className="container py-10 text-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+          Error loading movie: {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!movie && !isLoading) {
+    return <div className="container py-10 text-center">Movie not found</div>;
+  }
+
+  const releaseYear = movie?.releaseDate ? new Date(movie?.releaseDate).getFullYear() : null;
 
   // Determine flex direction based on config
   const flexDirection = MovieDetailUIConfig.poster.position === 'right' 
@@ -22,10 +40,10 @@ export default function MovieDetailPage() {
     : 'md:flex-row';
 
   // Resolve configured images
-  const imageConfig = movie.tmdbId ? MovieDetailImageConfig[movie.tmdbId] : undefined;
+  const imageConfig = movie?.tmdbId ? MovieDetailImageConfig[movie.tmdbId] : undefined;
 
   // Resolve Poster URL
-  let activePosterUrl = movie.posterUrl;
+  let activePosterUrl = movie?.posterUrl || '';
   if (imageConfig?.posterFilepath) {
     // Use manual file path if provided
     const posterPath = imageConfig.posterFilepath;
@@ -33,7 +51,7 @@ export default function MovieDetailPage() {
   }
 
   // Resolve Backdrop URL
-  let activeBackdropUrl = movie.backdropUrl;
+  let activeBackdropUrl = movie?.backdropUrl || '';
   if (imageConfig?.backdropFilepath) {
     // Use manual file path if provided
     const backdropPath = imageConfig.backdropFilepath;
@@ -56,8 +74,20 @@ export default function MovieDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Show skeleton loading while movie data is loading or not hydrated */}
+      {(!isHydrated || isLoading) && (
+        <div className="container py-10 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-300 rounded w-64 mx-auto mb-4"></div>
+            <div className="h-4 bg-gray-300 rounded w-48 mx-auto"></div>
+          </div>
+        </div>
+      )}
       
-      {/* 1. TOP BACKDROP SECTION - Taller & Cinematic */}
+      {/* Movie content - only rendered when hydrated and movie data is available */}
+      {isHydrated && !isLoading && movie && (
+        <>
+        {/* 1. TOP BACKDROP SECTION - Taller & Cinematic */}
       <div 
         className="relative w-full bg-muted overflow-hidden"
         style={{ height: MovieDetailUIConfig.layout.backdropHeight }}
@@ -196,6 +226,8 @@ export default function MovieDetailPage() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
