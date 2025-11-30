@@ -4,12 +4,12 @@
 
 ### Core Files:
 - `apps/web/src/app/movies/page.tsx` - Main movies page component that renders the movie grid. Fully styled with Tailwind CSS v4.
-- `apps/web/src/app/movies/layout.tsx` - Layout wrapper for the movies section that provides consistent structure
-- `apps/web/src/components/movie-card.tsx` - Component for displaying individual movie cards with poster, title, and metadata
-- `apps/web/src/components/movie-card-skeleton.tsx` - Loading skeleton component for movie cards
-- `apps/web/src/hooks/use-movies.ts` - Custom hook for fetching and managing movie data with loading states
+- `apps/web/src/app/movies/layout.tsx` - Layout wrapper for the movies section that provides consistent structure with MoviesProvider
+- `apps/web/src/components/movie-card.tsx` - Component for displaying individual movie cards with poster, title, and metadata. Includes MovieCardSkeleton export.
+- `apps/web/src/hooks/use-movie-browsing.ts` - Custom hook for fetching and managing movie data with search/genre filtering and loading states
 - `apps/web/src/types/movie.ts` - TypeScript type definitions for movie entities ensuring type safety
 - `apps/web/src/lib/movie-utils.ts` - Utility functions for movie data processing including formatting and transformations
+- `apps/web/src/providers/MoviesProvider.tsx` - Context provider that manages global movies data state
 
 ### Supporting Files:
 - `apps/web/src/components/grid-controls.tsx` - UI controls for grid manipulation (view mode, sort, filter). Refactored to use standard Tailwind classes.
@@ -18,44 +18,50 @@
 
 ## Functioning Purpose
 
-- **`movies/page.tsx`**: The main page component that orchestrates the movie browsing interface. It handles the overall layout, manages browsing state, and coordinates between child components. This component renders the grid of movie cards and integrates with pagination and filtering controls. It has been refactored to use native HTML elements and Tailwind utility classes for styling, replacing the deprecated `ui-simple.tsx` components.
+- **`movies/page.tsx`**: The main page component that orchestrates the movie browsing interface. Manages client-side state for search query, grid size, view mode, and pagination (12 items per page). Uses `useMovies()` hook to fetch and filter data from the MoviesProvider. Persists current page to sessionStorage to maintain position on page reload. Renders grid or list view based on user controls and displays error/empty states. Returns paginatedMovies slice for current page view.
 
-- **`movies/layout.tsx`**: Provides consistent layout structure for all movie-related pages, ensuring UI consistency across the movie browsing experience.
+- **`movies/layout.tsx`**: Provides consistent layout structure for all movie-related pages. Wraps children with `MoviesProvider` to make global movies context available to all components. Ensures UI consistency across the movie browsing experience.
 
-- **`movie-card.tsx`**: Displays individual movie information in a card format including poster image, title, release year, rating, and other key metadata. Each card is clickable and navigates to the movie detail page.
+- **`movie-card.tsx`**: Displays individual movie information in a card format including poster image, title, release year, rating, genres, and duration. Supports both grid and list view modes with responsive sizing (small/medium/large). Each card is clickable and navigates to the movie detail page using `/movies/{tmdbId}` or `/movies/{_id}`. Exports `MovieCardSkeleton` component for loading states.
 
-- **`movie-card-skeleton.tsx`**: Provides a loading placeholder while movie data is being fetched, maintaining layout stability during data loading.
+- **`use-movie-browsing.ts`**: Custom hook that retrieves movies from MoviesProvider context and applies filtering. Handles search query filtering (title match), genre filtering, and item limit. Returns processed movies array via `transformMovieData()`, unique genres list, and loading/error states. Memoizes results to prevent unnecessary re-renders.
 
-- **`use-movies.ts`**: Manages data fetching, caching, and state management for movie lists. Handles API calls to retrieve movies, implements loading states, error handling, and provides data transformation.
+- **`movie.ts`**: Defines TypeScript interfaces for movie data structures, ensuring type safety throughout the movie browsing feature. Includes Movie interface with fields for id, title, descriptions, urls, metadata, and tmdbId.
 
-- **`movie.ts`**: Defines TypeScript interfaces for movie data structures, ensuring type safety throughout the movie browsing feature.
+- **`grid-controls.tsx`**: Offers user controls for adjusting how movies are displayed. Provides grid size toggles (S/M/L) and view mode switch (grid/list). Uses Tailwind classes for consistent styling and semantic icons (SVG grid/list icons).
 
-- **`grid-controls.tsx`**: Offers user controls for adjusting how movies are displayed, including view modes, sorting options, and filtering capabilities. Refactored to use standard Tailwind classes for better theme integration and responsiveness.
+- **`pagination-controls.tsx`**: Enables navigation through paginated movie lists. Shows item range indicator, previous/next buttons, and page number buttons with smart truncation (shows first/last page with ellipsis for large page counts). Displays "Showing X to Y of Z results" summary.
 
-- **`pagination-controls.tsx`**: Enables navigation through multiple pages of movies, with controls for page navigation and items per page selection. Refactored to use standard Tailwind classes.
+- **`movie-utils.ts`**: Transforms raw Convex movie data to frontend Movie interface. Builds TMDB image URLs from poster/backdrop filepaths with appropriate sizes (w500 for posters, original for backdrops). Maps database fields (tmdb_id, main_poster, etc.) to frontend interface.
 
-- **`movie-utils.ts`**: Contains helper functions for processing movie data, such as formatting dates, calculating ratings, and other data transformations.
+- **`movie-browsing-ui-config.ts`**: Centralized configuration file that controls grid layout, card appearance, and responsive behavior. Key settings: grid gap (1.5rem), minimum column widths (140px small, 180px medium, 280px large), card aspect ratio (150% for 2:3 posters), card info display flags (all default to false, hiding titles/ratings/duration by default), and padding values for different screen sizes.
 
-- **`movie-browsing-ui-config.ts`**: Centralizes UI configuration for the movie browsing experience, defining layout dimensions, grid spacings, card appearance, and other visual elements. This allows for easy customization of the movie browsing UI without modifying component logic.
+- **`MoviesProvider.tsx`**: Context provider that manages global movies state. Fetches all movies from Convex backend and caches results. Provides isLoading and error states. Consumed by `use-movie-browsing.ts` hook to enable component access to movies data without prop drilling.
 
 ## Interaction
 
 The movie browsing feature creates a cohesive experience through interconnected components:
 
-1. The `movies/page.tsx` serves as the main container, orchestrating layout and connecting all child components.
+1. **Provider Setup**: `movies/layout.tsx` wraps the page with `MoviesProvider`, which fetches all movies from Convex and caches them in context.
 
-2. The `use-movies.ts` hook provides movie data to the page component, handling data fetching with loading states indicated by `movie-card-skeleton.tsx` placeholders.
+2. **Data Access**: `movies/page.tsx` uses the `useMovies()` hook to access provider context and apply local filters (search query, genre). The hook returns processed movies and loading states.
 
-3. Movie cards are dynamically rendered based on the data from the hook. Each card represents an individual movie with key information and visual elements.
+3. **Pagination**: Page component maintains `currentPage` state with sessionStorage persistence. It calculates pagination with 12 items per page, showing only the current page slice to `movie-card.tsx` components.
 
-4. The `grid-controls.tsx` and `pagination-controls.tsx` components provide user interaction capabilities, allowing users to customize their browsing experience.
+4. **State Management**: User interactions with `grid-controls.tsx` (grid size, view mode) and search input update page state. When search query changes, current page resets to 1 to avoid confusion.
 
-5. When users interact with controls, the state changes trigger the hook to fetch updated data, which then re-renders the movie grid accordingly.
+5. **Grid Rendering**: The page computes dynamic grid styles using `MovieBrowsingUIConfig` values. For grid view, it uses CSS Grid with `auto-fill` and responsive min-column-widths. For list view, it's a single-column layout.
 
-6. Each movie card is clickable, navigating users to the movie detail page for more in-depth information.
+6. **Movie Cards**: Each movie is rendered as a `movie-card.tsx` component. Cards support both grid and list modes, with configurable info visibility (titles, ratings, descriptions disabled by default per config).
 
-7. The `movie-utils.ts` functions support data transformation needs across multiple components, ensuring consistent data formatting.
+7. **Navigation**: Each card links to `/movies/{tmdbId}` or `/movies/{_id}`, routing to the movie detail page.
 
-8. The `movie-browsing-ui-config.ts` provides a centralized configuration approach, allowing visual adjustments to be made consistently across the movie grid and cards without modifying component logic. The `movies/page.tsx` and `movie-card.tsx` both reference this configuration to maintain UI consistency.
+8. **Pagination Controls**: `pagination-controls.tsx` displays page numbers and navigation buttons. Shows item range summary and handles page changes, which updates sessionStorage and triggers re-render.
 
-This architecture creates a responsive, dynamic movie browsing experience that efficiently handles data fetching, user interactions, and visual presentation.
+9. **Data Transformation**: The `movie-utils.ts` `transformMovieData()` function is called by the hook to convert raw Convex documents to frontend Movie types, building TMDB image URLs.
+
+10. **Error Handling**: If an error occurs, a red alert box displays with a retry button. Empty states show a cinema emoji and prompt to load sample movies if no movies exist.
+
+11. **UI Configuration**: All visual properties (colors, sizes, spacing) are driven by `MovieBrowsingUIConfig`. Updating config values automatically affects the entire grid, cards, and controls without code changes.
+
+This architecture creates a responsive, dynamic movie browsing experience with centralized configuration, efficient pagination, and flexible filtering.
