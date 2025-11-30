@@ -15,18 +15,18 @@ export default function MoviesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [gridSize, setGridSize] = useState<GridSize>("medium");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [currentPage, setCurrentPage] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('movie-page');
-      if (stored) {
-        const page = parseInt(stored, 10);
-        if (!isNaN(page) && page > 0) {
-          return page;
-        }
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Initialize page from storage on mount
+  useEffect(() => {
+    const stored = sessionStorage.getItem('movie-page');
+    if (stored) {
+      const page = parseInt(stored, 10);
+      if (!isNaN(page) && page > 0) {
+        setCurrentPage(page);
       }
     }
-    return 1;
-  });
+  }, []);
 
   // Save page to sessionStorage when it changes
   useEffect(() => {

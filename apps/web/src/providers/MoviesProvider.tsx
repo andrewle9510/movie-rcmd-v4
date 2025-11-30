@@ -27,17 +27,29 @@ interface MoviesContextType {
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 
 export function MoviesProvider({ children }: { children: ReactNode }) {
-  // Try to load from cache first
-  const cachedMovies = getMoviesFromCache();
-  const hasCache = hasValidCache();
-  const [movies, setMovies] = useState(cachedMovies || undefined);
-  const [isUsingCache, setIsUsingCache] = useState(!!cachedMovies);
-  const [isLoading, setIsLoading] = useState(!cachedMovies);
+  // Initialize state to match server rendering (loading state)
+  const [movies, setMovies] = useState<any[] | undefined>(undefined);
+  const [isUsingCache, setIsUsingCache] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [shouldFetch, setShouldFetch] = useState(false);
+  
   const error = false;
 
-  // Only fetch from Convex if no cached data
+  // Check cache on mount only
+  useEffect(() => {
+    const cachedMovies = getMoviesFromCache();
+    if (cachedMovies) {
+      setMovies(cachedMovies);
+      setIsUsingCache(true);
+      setIsLoading(false);
+    } else {
+      setShouldFetch(true);
+    }
+  }, []);
+
+  // Only fetch from Convex if explicitly requested (no cache found)
   const convexMovies = useQuery(api.movies.getMovies, 
-    cachedMovies ? "skip" : undefined
+    shouldFetch ? undefined : "skip"
   );
 
   // Handle Convex data arrival and save to cache
@@ -76,7 +88,17 @@ export function MoviesProvider({ children }: { children: ReactNode }) {
   }, [movies]);
 
   // Cache status for UI
-  const cacheStatus = useMemo(() => getCacheStatus(), []);
+  const [cacheStatus, setCacheStatus] = useState<MovieCacheStatus>({
+    hasCache: false,
+    timestamp: '',
+    lastUpdated: null,
+    version: '1.0.0'
+  });
+
+  // Update cache status on mount
+  useEffect(() => {
+    setCacheStatus(getCacheStatus());
+  }, [movies]); // Update when movies change (e.g. after fetch or clear)
 
   const contextValue = useMemo(() => ({
     movies,

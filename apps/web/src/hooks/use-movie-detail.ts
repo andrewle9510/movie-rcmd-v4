@@ -18,7 +18,19 @@ export function useMovie(id: string) {
     cachedMovie = isTmdbId ? findMovieByTmdbId(tmdbId!) : findMovieById(id);
   }
 
-  // If found in cache, return it immediately
+  // If found in cache, we still need to call hooks to preserve order, but we can ignore their results
+  const skipQuery = !!cachedMovie;
+
+  // If not in cache, fallback to individual query
+  const convexMovieById = useQuery(api.movies.getMovie, 
+    !isTmdbId && !skipQuery ? { id: id as Id<"movies"> } : "skip"
+  );
+
+  const convexMovieByTmdbId = useQuery(api.movies.getMovieByTmdbId,
+    isTmdbId && tmdbId !== null && !skipQuery ? { tmdbId } : "skip"
+  );
+
+  // Return cached movie if available
   if (cachedMovie && cachedMovie._id) {
     return { 
       movie: transformMovieData(cachedMovie), 
@@ -26,15 +38,6 @@ export function useMovie(id: string) {
       error: null 
     };
   }
-
-  // If not in cache, fallback to individual query
-  const convexMovieById = useQuery(api.movies.getMovie, 
-    !isTmdbId && !cachedMovie ? { id: id as Id<"movies"> } : "skip"
-  );
-
-  const convexMovieByTmdbId = useQuery(api.movies.getMovieByTmdbId,
-    isTmdbId && tmdbId !== null && !cachedMovie ? { tmdbId } : "skip"
-  );
 
   
 
