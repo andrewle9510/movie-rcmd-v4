@@ -12,6 +12,7 @@ export default function MovieDetailPage() {
   const movieId = params.movieId as string;
   const { movie, isLoading, error } = useMovie(movieId);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [backdropLoaded, setBackdropLoaded] = useState(false);
 
   // Only render dynamic content after hydration to prevent SSR/client mismatch
   useEffect(() => {
@@ -98,10 +99,14 @@ export default function MovieDetailPage() {
               src={activeBackdropUrl} 
               alt={`${movie.title} backdrop`}
               fill 
-              className="object-cover" 
-              style={{ opacity: MovieDetailUIConfig.backdrop.opacity }}
+              className={`object-cover ${backdropLoaded ? 'animate-fade-in' : 'opacity-0'}`}
+              style={{ 
+                opacity: backdropLoaded ? MovieDetailUIConfig.backdrop.opacity : 0,
+                animationDuration: MovieDetailUIConfig.backdrop.fadeInDuration
+              }}
               priority 
               unoptimized
+              onLoad={() => setBackdropLoaded(true)}
             />
             {/* Gradient for smooth transition to page background */}
             {gradientConfig.enabled && (

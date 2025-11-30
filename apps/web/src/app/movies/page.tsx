@@ -10,22 +10,23 @@ import { useMoviesContext } from "@/providers/MoviesProvider";
 
 const ITEMS_PER_PAGE = 12;
 
+function getInitialPage(): number {
+  if (typeof window === 'undefined') return 1;
+  const stored = sessionStorage.getItem('movie-page');
+  if (stored) {
+    const page = parseInt(stored, 10);
+    if (!isNaN(page) && page > 0) {
+      return page;
+    }
+  }
+  return 1;
+}
+
 export default function MoviesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [gridSize, setGridSize] = useState<GridSize>("medium");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Initialize page from storage on mount
-  useEffect(() => {
-    const stored = sessionStorage.getItem('movie-page');
-    if (stored) {
-      const page = parseInt(stored, 10);
-      if (!isNaN(page) && page > 0) {
-        setCurrentPage(page);
-      }
-    }
-  }, []);
+  const [currentPage, setCurrentPage] = useState(getInitialPage());
 
   // Save page to sessionStorage when it changes
   useEffect(() => {
