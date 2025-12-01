@@ -1,9 +1,10 @@
 // Local storage utilities for movie data caching
 
-const CACHE_KEY = 'movie-cache';
-const CACHE_TIMESTAMP_KEY = 'movie-cache-timestamp';
+const MOVIES_CACHE_KEY = 'movie-cache';
+const MOVIES_CACHE_TIMESTAMP_KEY = 'movie-cache-timestamp';
 const CACHE_VERSION_KEY = 'movie-cache-version';
 const MOVIES_DATA_VERSION_KEY = 'movies-data-version';
+const DB_FETCH_TIMESTAMP_KEY = 'movies-db-fetch-timestamp';
 const CURRENT_VERSION = '1.0.0';
 
 export interface MovieCacheStatus {
@@ -17,8 +18,8 @@ export interface MovieCacheStatus {
 export const saveMoviesToCache = (movies: any[], moviesDataVersion: string): void => {
   try {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(movies));
-      localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+      localStorage.setItem(MOVIES_CACHE_KEY, JSON.stringify(movies));
+      localStorage.setItem(MOVIES_CACHE_TIMESTAMP_KEY, Date.now().toString());
       localStorage.setItem(CACHE_VERSION_KEY, CURRENT_VERSION);
       localStorage.setItem(MOVIES_DATA_VERSION_KEY, moviesDataVersion);
     }
@@ -31,7 +32,7 @@ export const getMoviesFromCache = (): any[] | null => {
   try {
     if (typeof window !== 'undefined') {
       const start = performance.now();
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = localStorage.getItem(MOVIES_CACHE_KEY);
       if (!cached) return null;
       
       const parsed = JSON.parse(cached);
@@ -54,8 +55,8 @@ export const getMoviesFromCache = (): any[] | null => {
 export const hasValidCache = (): boolean => {
   try {
     if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem(CACHE_KEY);
-      const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+      const cached = localStorage.getItem(MOVIES_CACHE_KEY);
+      const timestamp = localStorage.getItem(MOVIES_CACHE_TIMESTAMP_KEY);
       const version = localStorage.getItem(CACHE_VERSION_KEY);
       const moviesDataVersion = localStorage.getItem(MOVIES_DATA_VERSION_KEY);
       
@@ -70,8 +71,8 @@ export const hasValidCache = (): boolean => {
 export const clearMovieCache = (): void => {
   try {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(CACHE_KEY);
-      localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+      localStorage.removeItem(MOVIES_CACHE_KEY);
+      localStorage.removeItem(MOVIES_CACHE_TIMESTAMP_KEY);
       localStorage.removeItem(CACHE_VERSION_KEY);
       localStorage.removeItem(MOVIES_DATA_VERSION_KEY);
     }
@@ -83,7 +84,7 @@ export const clearMovieCache = (): void => {
 export const getCacheTimestamp = (): string => {
   try {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(CACHE_TIMESTAMP_KEY) || '';
+      return localStorage.getItem(MOVIES_CACHE_TIMESTAMP_KEY) || '';
     }
     return '';
   } catch {
@@ -102,7 +103,7 @@ export const getCachedMoviesDataVersion = (): string | null => {
   }
 };
 
-export const isCacheDataStale = (serverMoviesDataVersion: string): boolean => {
+export const isCacheMoviesDataStale = (serverMoviesDataVersion: string): boolean => {
   const cachedMoviesDataVersion = getCachedMoviesDataVersion();
   return !cachedMoviesDataVersion || cachedMoviesDataVersion !== serverMoviesDataVersion;
 };
@@ -119,4 +120,39 @@ export const getCacheStatus = (): MovieCacheStatus => {
     version: CURRENT_VERSION,
     moviesDataVersion
   };
+};
+
+export const getLastFetchTime = (): string | null => {
+  try {
+    if (typeof window !== 'undefined') {
+      const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+      if (timestamp) {
+        return new Date(parseInt(timestamp)).toLocaleString();
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+export const saveDbFetchTime = (): void => {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(DB_FETCH_TIMESTAMP_KEY, new Date().toLocaleString());
+    }
+  } catch (error) {
+    console.error('Failed to save DB fetch time:', error);
+  }
+};
+
+export const getDbFetchTime = (): string | null => {
+  try {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(DB_FETCH_TIMESTAMP_KEY);
+    }
+    return null;
+  } catch {
+    return null;
+  }
 };

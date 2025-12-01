@@ -8,14 +8,15 @@ import {
   getMoviesFromCache, 
   saveMoviesToCache, 
   getCacheStatus,
-  isCacheDataStale
+  isCacheMoviesDataStale,
+  saveDbFetchTime
 } from "@/lib/movie-cache";
 
 interface MoviesContextType {
   movies: any[] | undefined;
   isLoading: boolean;
   error: boolean;
-  isUsingCache: boolean;
+  isUsingMoviesCache: boolean;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -23,21 +24,21 @@ const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 export function MoviesProvider({ children }: { children: ReactNode }) {
   // Initialize state to match server rendering (loading state)
   const [movies, setMovies] = useState<any[] | undefined>(undefined);
-  const [isUsingCache, setIsUsingCache] = useState(false);
+  const [isUsingMoviesCache, setIsUsingMoviesCache] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [shouldFetch, setShouldFetch] = useState(false);
-  const [hasCheckedVersion, setHasCheckedVersion] = useState(false);
-  const dataVersionRef = useRef<string | null>(null);
+  const [shouldFetchMovies, setShouldFetchMovies] = useState(false);
+  const [hasCheckedMoviesDataVersion, setHasCheckedMoviesDataVersion] = useState(false);
+  const moviesDataVersionRef = useRef<string | null>(null);
   
   const error = false;
 
   // Fetch movies data version to check if cache is stale
   const moviesDataVersion = useQuery(api.movies.getMoviesDataVersion);
 
-  // Check cache immediately (don't wait for moviesDataVersion query)
+  // Check cache immediately (don't wait for movies data version query)
   useEffect(() => {
-    if (!hasCheckedVersion) {
-      // Try to load cache immediately without waiting for server data version
+    if (!hasCheckedMoviesDataVersion) {
+      // Try to load cache immediately without waiting for server movies data version
       const cachedMovies = getMoviesFromCache();
       
       if (cachedMovies) {
@@ -45,45 +46,46 @@ export function MoviesProvider({ children }: { children: ReactNode }) {
         console.log("📦 Setting movies from cache, count:", cachedMovies.length);
         const cacheStatus = getCacheStatus();
         setMovies(cachedMovies);
-        dataVersionRef.current = cacheStatus.moviesDataVersion;
-        setIsUsingCache(true);
+        moviesDataVersionRef.current = cacheStatus.moviesDataVersion;
+        setIsUsingMoviesCache(true);
         setIsLoading(false);
       }
       
-      setHasCheckedVersion(true);
+      setHasCheckedMoviesDataVersion(true);
     }
-  }, [hasCheckedVersion]);
+  }, [hasCheckedMoviesDataVersion]);
 
-  // Check if cache is stale once we get the server data version
+  // Check if cache is stale once we get the server movies data version
   useEffect(() => {
-    if (hasCheckedVersion && moviesDataVersion && isUsingCache) {
-      // Check if cache is stale now that we have the version
-      if (isCacheDataStale(moviesDataVersion.moviesDataVersion)) {
+    if (hasCheckedMoviesDataVersion && moviesDataVersion && isUsingMoviesCache) {
+      // Check if cache is stale now that we have the movies data version
+      if (isCacheMoviesDataStale(moviesDataVersion.moviesDataVersion)) {
         // Cache is stale, fetch fresh data
-        setShouldFetch(true);
+        setShouldFetchMovies(true);
       }
     }
-  }, [moviesDataVersion, hasCheckedVersion, isUsingCache]);
+  }, [moviesDataVersion, hasCheckedMoviesDataVersion, isUsingMoviesCache]);
 
   // Only fetch from Convex if explicitly requested (no cache or stale cache)
   const convexMovies = useQuery(api.movies.getMovies, 
-    shouldFetch ? undefined : "skip"
+    shouldFetchMovies ? undefined : "skip"
   );
 
   // Handle Convex data arrival and save to cache
   const handleConvexData = useCallback((data: any[], version: string) => {
-    // Guard: Skip if version matches current data version
-    if (version === dataVersionRef.current) {
-      console.log("⚡️ Data version match, skipping update");
+    // Guard: Skip if version matches current movies data version
+    if (version === moviesDataVersionRef.current) {
+      console.log("⚡️ Movies data version match, skipping update");
       return;
     }
 
     console.log("🌐 Setting movies from Convex, count:", data.length);
     setMovies(data);
-    dataVersionRef.current = version;
-    setIsUsingCache(false);
+    moviesDataVersionRef.current = version;
+    setIsUsingMoviesCache(false);
     setIsLoading(false);
     saveMoviesToCache(data, version);
+    saveDbFetchTime();
   }, []);
 
   // Update when Convex data arrives
@@ -98,8 +100,8 @@ export function MoviesProvider({ children }: { children: ReactNode }) {
     movies,
     isLoading,
     error,
-    isUsingCache
-  }), [movies, isLoading, error, isUsingCache]);
+    isUsingMoviesCache
+  }), [movies, isLoading, error, isUsingMoviesCache]);
 
   return (
     <MoviesContext.Provider value={contextValue}>

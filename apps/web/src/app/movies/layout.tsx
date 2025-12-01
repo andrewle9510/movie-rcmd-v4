@@ -1,4 +1,5 @@
 import { MoviesProvider } from "@/providers/MoviesProvider";
+import { Footer } from "@/components/footer";
 
 export default function MoviesLayout({
   children,
@@ -12,6 +13,7 @@ export default function MoviesLayout({
         <main className="flex-1">
           {children}
         </main>
+        <Footer />
       </div>
     </MoviesProvider>
   );
