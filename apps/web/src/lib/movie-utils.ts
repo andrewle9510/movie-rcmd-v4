@@ -27,5 +27,7 @@ export function transformMovieData(movie: any): Movie {
     director: undefined,
     cast: movie.cast || [],
     tmdbId: movie.tmdb_id,
+    screenshotUrl: movie.screenshot_url || undefined,
+    screenshotIdList: movie.screenshot_id_list || undefined,
   };
 }

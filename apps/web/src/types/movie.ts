@@ -12,6 +12,8 @@ export interface Movie {
   director?: string;
   cast?: string[];
   tmdbId?: number;
+  screenshotUrl?: string;
+  screenshotIdList?: string[];
 }
 
 export interface MovieSearchParams {

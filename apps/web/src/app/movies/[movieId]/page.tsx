@@ -3,16 +3,36 @@
 import { useMovie } from "@/hooks/use-movie-detail";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
 import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
+import { BackdropCarouselControls } from "@/components/backdrop-carousel-controls";
+
+const fadeInStyles = `
+  @keyframes fadeIn {
+    from {
+      opacity: var(--loading-opacity);
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .backdrop-image-loading {
+    animation: fadeIn var(--transition-duration) ease-in;
+  }
+  .backdrop-image-exit {
+    animation: fadeIn var(--transition-duration) ease-out reverse;
+  }
+`;
+
 
 export default function MovieDetailPage() {
   const params = useParams();
   const movieId = params.movieId as string;
   const result = useMovie(movieId);
   const { movie, isLoading, error } = result;
-  const [backdropLoaded, setBackdropLoaded] = useState(false);
+  const [currentScreenshotIndex, setCurrentScreenshotIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   console.log("🎬 MovieDetailPage render, movie:", movie?.title, "isLoading:", isLoading);
 
@@ -32,6 +52,103 @@ export default function MovieDetailPage() {
 
   const releaseYear = movie?.releaseDate ? new Date(movie?.releaseDate).getFullYear() : null;
 
+  // Screenshot carousel logic
+  const hasScreenshots = movie?.screenshotIdList && movie.screenshotIdList.length > 0;
+  const screenshotCount = movie?.screenshotIdList?.length || 0;
+
+  const buildScreenshotUrl = (index: number): string => {
+    // Index 0 is the main backdrop
+    if (index === 0) {
+      return movie?.backdropUrl || '';
+    }
+    // Indices 1+ are screenshots (offset by 1 in the array)
+    if (!movie?.screenshotUrl || !movie.screenshotIdList || !movie.screenshotIdList[index - 1]) {
+      return '';
+    }
+    const relativePath = movie.screenshotUrl.replace('{screenshot_id}', movie.screenshotIdList[index - 1]);
+    return `https://screenmusings.org/movie${relativePath}`;
+  };
+
+  const totalImages = screenshotCount + 1; // +1 for main backdrop at index 0
+
+  const handleNextScreenshot = () => {
+    if (hasScreenshots || movie?.backdropUrl) {
+      // Cycle through indices 0 to screenshotCount (0 is backdrop, 1-10 are screenshots)
+      setCurrentScreenshotIndex((prev) => (prev + 1) % totalImages);
+    }
+  };
+
+  const handlePreviousScreenshot = () => {
+    if (hasScreenshots || movie?.backdropUrl) {
+      // Cycle backwards through all indices
+      setCurrentScreenshotIndex((prev) => (prev - 1 + totalImages) % totalImages);
+    }
+  };
+
+  // Reset screenshot index when movie changes
+  useEffect(() => {
+    setCurrentScreenshotIndex(0);
+    setImageLoaded(false);
+  }, [movieId]);
+
+  // Store previous image URL for cross-fade
+  const [prevDisplayUrl, setPrevDisplayUrl] = useState<string>('');
+
+  // Reset imageLoaded when index changes and save previous URL
+  useEffect(() => {
+    // Save the current displayUrl before clearing loaded state
+    if (!imageLoaded) return; // Only update if previous image was fully loaded
+    setImageLoaded(false);
+  }, [currentScreenshotIndex]);
+
+  // Keyboard navigation for screenshots
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!hasScreenshots) return;
+      
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePreviousScreenshot();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextScreenshot();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasScreenshots, screenshotCount, handleNextScreenshot, handlePreviousScreenshot]);
+
+  // currentScreenshotIndex is 0-10: index 0 is backdrop, indices 1-10 are screenshots
+  // Display the image at current index
+  const displayUrl = buildScreenshotUrl(currentScreenshotIndex);
+  
+  // Preload next and previous images
+  const nextIndex = (currentScreenshotIndex + 1) % totalImages;
+  const prevIndex = (currentScreenshotIndex - 1 + totalImages) % totalImages;
+  const nextUrl = buildScreenshotUrl(nextIndex);
+  const prevUrl = buildScreenshotUrl(prevIndex);
+  
+  // Preload images using effect
+  useEffect(() => {
+    const preloadImage = (url: string) => {
+      if (!url) return;
+      const img = globalThis.Image ? new globalThis.Image() : undefined;
+      if (img) {
+        img.src = url;
+      }
+    };
+    preloadImage(nextUrl);
+    preloadImage(prevUrl);
+  }, [nextUrl, prevUrl]);
+
+  // Update prevDisplayUrl to current image when it loads
+  useEffect(() => {
+    if (imageLoaded && displayUrl && displayUrl !== prevDisplayUrl) {
+      setPrevDisplayUrl(displayUrl);
+    }
+  }, [displayUrl, imageLoaded, prevDisplayUrl]);
+
   // Determine flex direction based on config
   const flexDirection = MovieDetailUIConfig.poster.position === 'right' 
     ? 'md:flex-row-reverse' 
@@ -48,13 +165,18 @@ export default function MovieDetailPage() {
     activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
   }
 
-  // Resolve Backdrop URL
-  let activeBackdropUrl = movie?.backdropUrl || '';
-  if (imageConfig?.backdropFilepath) {
-    // Use manual file path if provided
+  // Display current image (index 0 is backdrop, indices 1-10 are screenshots)
+  let activeBackdropUrl = displayUrl || movie?.backdropUrl || '';
+  if (imageConfig?.backdropFilepath && !displayUrl) {
+    // Use manual file path only if no displayUrl available
     const backdropPath = imageConfig.backdropFilepath;
     activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
   }
+
+  // Update imageLoaded when new image loads
+  const handleImageLoadingComplete = () => {
+    setImageLoaded(true);
+  };
 
   // Resolve Backdrop Gradient
   const gradientConfig = MovieDetailUIConfig.backdrop.bottomFade;
@@ -72,6 +194,7 @@ export default function MovieDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <style>{fadeInStyles}</style>
       {/* Movie content - rendered when movie data is available */}
       {movie && (
         <>
@@ -80,28 +203,58 @@ export default function MovieDetailPage() {
         className="relative w-full bg-muted overflow-hidden"
         style={{ height: MovieDetailUIConfig.layout.backdropHeight }}
       >
-        {activeBackdropUrl && (
+        {(activeBackdropUrl || prevDisplayUrl) && (
           <>
-            <Image 
-              src={activeBackdropUrl} 
-              alt={`${movie.title} backdrop`}
-              fill 
-              className={`object-cover ${backdropLoaded ? 'animate-fade-in' : 'opacity-0'}`}
-              style={{ 
-                opacity: backdropLoaded ? MovieDetailUIConfig.backdrop.opacity : 0,
-                animationDuration: MovieDetailUIConfig.backdrop.fadeInDuration
-              }}
-              priority 
-              unoptimized
-              onLoad={() => setBackdropLoaded(true)}
-            />
+            {/* Previous image (fading out) */}
+            {prevDisplayUrl && prevDisplayUrl !== activeBackdropUrl && !imageLoaded && (
+              <Image 
+                src={prevDisplayUrl} 
+                alt="previous"
+                fill 
+                className="object-cover backdrop-image-exit"
+                style={{ 
+                  opacity: MovieDetailUIConfig.backdrop.opacity,
+                  zIndex: 1,
+                  '--transition-duration': MovieDetailUIConfig.backdrop.screenshotTransitionDuration,
+                } as React.CSSProperties & { '--transition-duration': string }}
+                unoptimized
+              />
+            )}
+            
+            {/* Current image (fading in) */}
+            {activeBackdropUrl && (
+              <Image 
+                key={`backdrop-${currentScreenshotIndex}`}
+                src={activeBackdropUrl} 
+                alt={`${movie.title} backdrop`}
+                fill 
+                className={`object-cover ${imageLoaded ? 'backdrop-image-loading' : ''}`}
+                style={{ 
+                  opacity: imageLoaded ? MovieDetailUIConfig.backdrop.opacity : MovieDetailUIConfig.backdrop.loadingOpacity,
+                  zIndex: 2,
+                  '--loading-opacity': MovieDetailUIConfig.backdrop.loadingOpacity,
+                  '--transition-duration': MovieDetailUIConfig.backdrop.screenshotTransitionDuration,
+                } as React.CSSProperties & { '--loading-opacity': number; '--transition-duration': string }}
+                priority 
+                unoptimized
+                onLoadingComplete={handleImageLoadingComplete}
+              />
+            )}
             {/* Gradient for smooth transition to page background */}
             {gradientConfig.enabled && (
               <div 
                 className={`absolute bottom-0 left-0 right-0 ${gradientClasses}`}
-                style={{ height: gradientConfig.height }}
+                style={{ height: gradientConfig.height, zIndex: 3 }}
               />
             )}
+            {/* Carousel controls (1/11 = backdrop + 10 screenshots) */}
+            <BackdropCarouselControls
+              onPrevious={handlePreviousScreenshot}
+              onNext={handleNextScreenshot}
+              currentIndex={currentScreenshotIndex + 1}
+              totalCount={totalImages}
+              show={hasScreenshots || movie?.backdropUrl}
+            />
           </>
         )}
       </div>

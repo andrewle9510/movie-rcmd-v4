@@ -9,7 +9,7 @@ To ensure consistency across the project and improve discoverability for AI agen
 - Avoid spaces and special characters
 
 ## Files
-- **React components**: `PascalCase.tsx` (e.g., `UserProfile.tsx`)
+- **React components**: `kebab-case.tsx` (e.g., `user-profile.tsx`)
 - **Non-component files**: `kebab-case` (e.g., `utility-functions.ts`, `api-client.js`)
 - **Configuration files**: Standard names (e.g., `.env`, `tsconfig.json`, `eslint.config.js`)
 - All files must be lowercase except component names
