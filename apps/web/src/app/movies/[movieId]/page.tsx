@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MovieDetailUIConfig } from "@/features/movie-detail/utils/movie-detail-ui-config";
 import { MovieDetailImageConfig } from "@/features/movie-detail/utils/movie-detail-backdrop-poster-config";
-import { BackdropCarouselControls } from "@/features/movie-browsing/components/backdrop-carousel-controls";
+import { BackdropCarouselControls } from "@/shared/components/backdrop-carousel-controls";
 
 const fadeInStyles = `
   @keyframes fadeIn {
