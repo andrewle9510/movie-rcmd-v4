@@ -1,10 +1,9 @@
 // @ts-nocheck
-// @ts-nocheck
-import { action, mutation, query } from "./_generated/server";
+import { action, mutation, query } from "../../../_generated/server";
 import { v } from "convex/values";
-import { type Id } from "./_generated/dataModel";
-import { internal } from "./_generated/api";
-import type { DbMovieStructure } from "./movieDataInterfaces";
+import { type Id } from "../../../_generated/dataModel";
+import { internal } from "../../../_generated/api";
+import type { DbMovieStructure } from "../movieDataInterfaces";
 
 // Mutation to create a movie in the Convex database
 export const createMovieFromTmdbData = mutation({

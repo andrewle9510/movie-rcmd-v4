@@ -1,10 +1,9 @@
 // @ts-nocheck
-// @ts-nocheck
-import { action } from "./_generated/server";
+import { action } from "../../../_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
-import type { DbMovieStructure } from "./movieDataInterfaces";
-import { parseScreenshotData } from "./lib/utils";
+import { internal } from "../../../_generated/api";
+import type { DbMovieStructure } from "../movieDataInterfaces";
+import { parseScreenshotData } from "../../../lib/utils";
 
 // Direct import workflow: Fetch from TMDB and import directly to Convex database
 export const runTmdbDirectImportWorkflow = action({

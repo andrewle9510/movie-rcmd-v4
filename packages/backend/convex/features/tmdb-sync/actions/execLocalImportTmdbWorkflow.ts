@@ -1,8 +1,7 @@
 // @ts-nocheck
-// @ts-nocheck
-import { action } from "./_generated/server";
+import { action } from "../../../_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { internal } from "../../../_generated/api";
 
 // This workflow orchestrates the complete TMDB import process:
 // 1. Fetch data from TMDB API and save locally

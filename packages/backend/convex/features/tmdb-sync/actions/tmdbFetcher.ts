@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { action } from "./_generated/server";
+import { action } from "../../../_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
-import type { TmdbMovieResponse, DbMovieStructure } from "./movieDataInterfaces";
+import { internal } from "../../../_generated/api";
+import type { TmdbMovieResponse, DbMovieStructure } from "../movieDataInterfaces";
 
 // TMDB API configuration
 const TMDB_API_KEY = process.env.TMDB_API_KEY;

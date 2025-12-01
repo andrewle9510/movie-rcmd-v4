@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { action } from "./_generated/server";
+import { action } from "../../../_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { internal } from "../../../_generated/api";
 import { fetchFromTmdb, transformTmdbMovieToDbStructure } from "./tmdbFetcher";
 
 // Action to fetch and save a single movie from TMDB to local file

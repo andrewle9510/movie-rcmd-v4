@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { query, mutation, internalQuery } from "./_generated/server";
+import { query, mutation, internalQuery } from "../../../_generated/server";
 import { v } from "convex/values";
-import { type Id } from "./_generated/dataModel";
+import { type Id } from "../../../_generated/dataModel";
 
 // Internal query to get all movies (for maintenance tasks)
 export const getAllMovies = internalQuery({
