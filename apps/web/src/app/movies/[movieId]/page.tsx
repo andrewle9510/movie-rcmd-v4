@@ -1,12 +1,12 @@
 "use client";
 
-import { useMovie } from "@/hooks/use-movie-detail";
+import { useMovie } from "@/features/movie-detail/hooks/use-movie-detail";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
-import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
-import { BackdropCarouselControls } from "@/components/backdrop-carousel-controls";
+import { MovieDetailUIConfig } from "@/features/movie-detail/utils/movie-detail-ui-config";
+import { MovieDetailImageConfig } from "@/features/movie-detail/utils/movie-detail-backdrop-poster-config";
+import { BackdropCarouselControls } from "@/features/movie-browsing/components/backdrop-carousel-controls";
 
 const fadeInStyles = `
   @keyframes fadeIn {
@@ -253,7 +253,7 @@ export default function MovieDetailPage() {
               onNext={handleNextScreenshot}
               currentIndex={currentScreenshotIndex + 1}
               totalCount={totalImages}
-              show={hasScreenshots || movie?.backdropUrl}
+              show={!!(hasScreenshots || movie?.backdropUrl)}
             />
           </>
         )}

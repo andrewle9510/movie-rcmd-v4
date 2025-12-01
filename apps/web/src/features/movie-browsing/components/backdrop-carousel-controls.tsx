@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
+import { MovieDetailUIConfig } from "../../movie-detail/utils/movie-detail-ui-config";
 
 interface BackdropCarouselControlsProps {
   onPrevious: () => void;

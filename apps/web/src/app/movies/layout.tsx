@@ -1,5 +1,5 @@
-import { MoviesProvider } from "@/providers/MoviesProvider";
-import { Footer } from "@/components/footer";
+import { MoviesProvider } from "@/shared/providers/MoviesProvider";
+import { Footer } from "@/shared/components/footer";
 
 export default function MoviesLayout({
   children,

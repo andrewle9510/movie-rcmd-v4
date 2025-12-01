@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Movie } from "@/types/movie";
+import type { Movie } from "@/shared/types/movie";
 import { MovieCardSkeleton } from "./movie-card-skeleton";
-import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
+import { MovieBrowsingUIConfig } from "../utils/movie-browsing-ui-config";
 
 export type GridSize = "small" | "medium" | "large";
 
