@@ -34,15 +34,15 @@ export const getMoviesFromCache = (): any[] | null => {
       const start = performance.now();
       const cached = localStorage.getItem(MOVIES_CACHE_KEY);
       if (!cached) return null;
-      
+
       const parsed = JSON.parse(cached);
       const duration = performance.now() - start;
-      
+
       // Log if parsing takes longer than 100ms
       if (duration > 100) {
         console.warn(`Cache parse took ${duration.toFixed(2)}ms for ${cached.length} bytes`);
       }
-      
+
       return parsed;
     }
     return null;
@@ -59,7 +59,7 @@ export const hasValidCache = (): boolean => {
       const timestamp = localStorage.getItem(MOVIES_CACHE_TIMESTAMP_KEY);
       const version = localStorage.getItem(CACHE_VERSION_KEY);
       const moviesDataVersion = localStorage.getItem(MOVIES_DATA_VERSION_KEY);
-      
+
       return cached !== null && timestamp !== null && version === CURRENT_VERSION && moviesDataVersion !== null;
     }
     return false;
@@ -112,7 +112,7 @@ export const getCacheStatus = (): MovieCacheStatus => {
   const timestamp = getCacheTimestamp();
   const lastUpdated = timestamp ? new Date(parseInt(timestamp)).toLocaleString() : null;
   const moviesDataVersion = getCachedMoviesDataVersion();
-  
+
   return {
     hasCache: hasValidCache(),
     timestamp,
@@ -125,7 +125,7 @@ export const getCacheStatus = (): MovieCacheStatus => {
 export const getLastFetchTime = (): string | null => {
   try {
     if (typeof window !== 'undefined') {
-      const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+      const timestamp = localStorage.getItem(MOVIES_CACHE_TIMESTAMP_KEY);
       if (timestamp) {
         return new Date(parseInt(timestamp)).toLocaleString();
       }

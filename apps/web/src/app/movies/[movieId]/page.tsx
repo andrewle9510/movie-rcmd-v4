@@ -248,13 +248,13 @@ export default function MovieDetailPage() {
               />
             )}
             {/* Carousel controls (1/11 = backdrop + 10 screenshots) */}
-            <BackdropCarouselControls
-              onPrevious={handlePreviousScreenshot}
-              onNext={handleNextScreenshot}
-              currentIndex={currentScreenshotIndex + 1}
-              totalCount={totalImages}
-              show={hasScreenshots || movie?.backdropUrl}
-            />
+             <BackdropCarouselControls
+               onPrevious={handlePreviousScreenshot}
+               onNext={handleNextScreenshot}
+               currentIndex={currentScreenshotIndex + 1}
+               totalCount={totalImages}
+               show={!!(hasScreenshots || movie?.backdropUrl)}
+             />
           </>
         )}
       </div>
