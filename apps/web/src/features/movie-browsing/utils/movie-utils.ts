@@ -1,6 +1,12 @@
 import type { Movie } from "@/shared/types/movie";
 
-export function transformMovieData(movie: any): Movie {
+interface CrewMember {
+  crew_id: number;
+  crew_name: string;
+  crew_type: string;
+}
+
+export function transformMovieData(movie: any, crewData?: CrewMember[]): Movie {
   // Ensure main_poster and main_backdrop are strings before using them
   const mainPoster = typeof movie.main_poster === 'string' ? movie.main_poster : undefined;
   const mainBackdrop = typeof movie.main_backdrop === 'string' ? movie.main_backdrop : undefined;
@@ -12,6 +18,16 @@ export function transformMovieData(movie: any): Movie {
   const backdropUrl = mainBackdrop
     ? `https://image.tmdb.org/t/p/original${mainBackdrop.startsWith('/') ? '' : '/'}${mainBackdrop}`
     : undefined;
+
+  // Map director IDs to names from crew data, filtering by crew_type
+  const directorNames = crewData && Array.isArray(crewData)
+    ? (movie.directors || [])
+        .map((directorId: number) => {
+          const crew = crewData.find(c => c.crew_id === directorId && c.crew_type === "Director");
+          return crew?.crew_name;
+        })
+        .filter(Boolean) // Remove undefined entries
+    : [];
 
   return {
     _id: movie._id,
@@ -25,6 +41,7 @@ export function transformMovieData(movie: any): Movie {
     rating: movie.vote_pts_system?.tmdb || undefined,
     duration: movie.runtime_minutes || undefined,
     director: undefined,
+    directorNames: directorNames.length > 0 ? directorNames : undefined,
     cast: movie.cast || [],
     tmdbId: movie.tmdb_id,
     screenshotUrl: movie.screenshot_url || undefined,

@@ -97,4 +97,11 @@ export default defineSchema({
     eventData: v.any(),
     createdAt: v.number(),
   }),
+
+  crew: defineTable({
+    crew_id: v.number(),
+    crew_name: v.string(),
+    crew_type: v.string(),
+  })
+    .index("by_crew_id", ["crew_id"]),
 });

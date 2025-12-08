@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { internalMutation } from "./_generated/server";
+import { internalMutation } from "../_generated/server";
 
 export const migrateMovieImages = internalMutation({
   args: {},

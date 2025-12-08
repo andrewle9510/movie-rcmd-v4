@@ -5,6 +5,26 @@ import { type Id } from "../../../_generated/dataModel";
 import { internal } from "../../../_generated/api";
 import type { DbMovieStructure } from "../movieDataInterfaces";
 
+// Helper function to insert crew data (check existence first)
+async function insertNewCrew(ctx: any, crewData: any[]) {
+  for (const crew of crewData) {
+    // Check if crew_id already exists
+    const existingCrew = await ctx.db
+      .query("crew")
+      .withIndex("by_crew_id", (q: any) => q.eq("crew_id", crew.crew_id))
+      .first();
+
+    // Only insert if crew doesn't exist
+    if (!existingCrew) {
+      await ctx.db.insert("crew", {
+        crew_id: crew.crew_id,
+        crew_name: crew.crew_name,
+        crew_type: crew.crew_type,
+      });
+    }
+  }
+}
+
 // Mutation to create a movie in the Convex database
 export const createMovieFromTmdbData = mutation({
   args: v.any(),
@@ -34,9 +54,15 @@ export const createMovieFromTmdbData = mutation({
       rotten_tomatoes: args.vote_pts_system.rotten_tomatoes ?? null,
     };
 
+    // Extract and insert crew data if provided
+    const crewData = args.crew_data || [];
+    if (crewData.length > 0) {
+      await insertNewCrew(ctx, crewData);
+    }
+
     if (existingMovie) {
       // Update existing movie instead of creating duplicate
-      const { vote_count_system, vote_pts_system, ...otherArgs } = args;
+      const { vote_count_system, vote_pts_system, crew_data, ...otherArgs } = args;
 
       await ctx.db.patch(existingMovie._id, {
         ...otherArgs,
@@ -58,16 +84,17 @@ export const createMovieFromTmdbData = mutation({
     }
 
     // Create new movie
+    const { crew_data, ...movieArgs } = args;
     const movieId = await ctx.db.insert("movies", {
-      ...args,
+      ...movieArgs,
       vote_count_system: cleanedVoteCountSystem,
       vote_pts_system: cleanedVotePtsSystem,
       // Handle optional fields by providing defaults
-      main_poster: args.main_poster ?? "",
-      main_backdrop: args.main_backdrop ?? "",
-      screenshots: args.screenshots ?? [],
-      screenshot_id_list: args.screenshot_id_list ?? [],
-      screenshot_url: args.screenshot_url ?? "",
+      main_poster: movieArgs.main_poster ?? "",
+      main_backdrop: movieArgs.main_backdrop ?? "",
+      screenshots: movieArgs.screenshots ?? [],
+      screenshot_id_list: movieArgs.screenshot_id_list ?? [],
+      screenshot_url: movieArgs.screenshot_url ?? "",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

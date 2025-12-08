@@ -366,18 +366,42 @@ export const createMovie = mutation({
   // Get movies data version for cache management
   export const getMoviesDataVersion = query({
     handler: async (ctx) => {
-      // Get the latest movie timestamp from the database
-      const latestMovie = await ctx.db.query("movies")
-        .order("desc", { field: "updated_at" })
-        .first();
-      
-      // Get total count of movies
+      // Get total count of movies first
       const allMovies = await ctx.db.query("movies").collect();
       const totalMovies = allMovies.length;
+      
+      // Only try to get latest movie if there are movies
+      let latestMovie = null;
+      if (totalMovies > 0) {
+        latestMovie = await ctx.db.query("movies")
+          .order("desc", { field: "updated_at" })
+          .first();
+      }
       
       return {
         moviesDataVersion: latestMovie?.updated_at || new Date().toISOString(),
         totalMovies
       };
     }
+  });
+
+  // Get crew members by IDs
+  export const getCrewByIds = query({
+    args: {
+      crewIds: v.array(v.number()),
+    },
+    handler: async (ctx, args) => {
+      if (!args.crewIds || args.crewIds.length === 0) {
+        return [];
+      }
+
+      const allCrew = await ctx.db.query("crew").collect();
+      
+      // Return empty array if crew table is empty
+      if (allCrew.length === 0) {
+        return [];
+      }
+      
+      return allCrew.filter(crew => args.crewIds.includes(crew.crew_id));
+    },
   });

@@ -117,6 +117,13 @@ export async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse):
   // Get extended movie details (with credits)
   const movieDetails = await fetchFromTmdb(`/movie/${movie.id}`, { append_to_response: 'credits,videos,keywords,release_dates' });
 
+  // Extract all crew members with their types
+  const allCrew = movieDetails.credits?.crew?.map((person: any) => ({
+    crew_id: person.id,
+    crew_name: person.name,
+    crew_type: person.job // "Director", "Producer", "Writer", etc.
+  })) || [];
+
   // Extract directors from crew
   const directors = movieDetails.credits?.crew
     .filter((person: any) => person.job === 'Director')
@@ -206,7 +213,8 @@ export async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse):
     main_poster: movieDetails.poster_path,
     main_backdrop: movieDetails.backdrop_path,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    crew_data: allCrew // Include crew data for insertion into crew table
   };
 }
 

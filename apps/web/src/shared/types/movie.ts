@@ -10,6 +10,7 @@ export interface Movie {
   rating?: number;
   duration?: number;
   director?: string;
+  directorNames?: string[];
   cast?: string[];
   tmdbId?: number;
   screenshotUrl?: string;

@@ -29,11 +29,20 @@ export function useMovie(id: string): MovieResult {
       : cachedMovies.find((m: any) => m._id === id);
   }, [cachedMovies, id, isTmdbId, tmdbId]);
 
-  // Memoize the transformed cached movie separately - only recalculates when cachedMovie changes
+  // Fetch crew data for cached movie if it has directors
+  const crewIds = useMemo(() => {
+    return cachedMovie?.directors || [];
+  }, [cachedMovie?.directors]);
+
+  const crewData = useQuery(api.movies.getCrewByIds,
+    crewIds.length > 0 ? { crewIds } : "skip"
+  );
+
+  // Memoize the transformed cached movie separately - only recalculates when cachedMovie or crewData changes
   const transformedCachedMovie = useMemo(() => {
     if (!cachedMovie?._id) return null;
-    return transformMovieData(cachedMovie);
-  }, [cachedMovie]);
+    return transformMovieData(cachedMovie, crewData || undefined);
+  }, [cachedMovie, crewData]);
 
   // Use ref to store stable cached result - prevents re-renders from Convex query updates
   const cachedResultRef = useRef<MovieResult | null>(null);
@@ -76,8 +85,14 @@ export function useMovie(id: string): MovieResult {
     return { movie: null, isLoading: false, error: "Movie not found" };
   }
 
+  // Fetch crew data for convex movie if it has directors
+  const convexCrewIds = convexMovie?.directors || [];
+  const convexCrewData = useQuery(api.movies.getCrewByIds,
+    convexCrewIds.length > 0 ? { crewIds: convexCrewIds } : "skip"
+  );
+
   return { 
-    movie: transformMovieData(convexMovie), 
+    movie: transformMovieData(convexMovie, convexCrewData || undefined), 
     isLoading: false, 
     error: null 
   };

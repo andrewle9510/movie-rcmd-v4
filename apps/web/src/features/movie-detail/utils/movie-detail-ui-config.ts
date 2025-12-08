@@ -15,7 +15,7 @@ export const MovieDetailUIConfig = {
     opacity: "1", // Opacity of the backdrop image (0 to 1). Set to "1" for full brightness.
     loadingOpacity: 0.5, // Opacity while image is loading (0 to 1). Reduces grey background visibility during fade-in.
     backdropLoadTransitionDuration: "0.5s", // Duration of the fade-in animation when backdrop loads. Format: any CSS duration (e.g., "0.3s", "0.5s", "400ms")
-    screenshotTransitionDuration: "0.2s", // Duration of fade transition when switching screenshots. Format: any CSS duration (e.g., "0.3s", "0.5s", "400ms")
+    screenshotTransitionDuration: "0.8s", // Duration of fade transition when switching screenshots. Format: any CSS duration (e.g., "0.3s", "0.5s", "400ms")
     bottomFade: {
       enabled: true, // Turn on/off the bottom gradient fade
       height: "40%", // How much of the backdrop height is covered (e.g., "50%", "200px", "100%")
@@ -26,7 +26,7 @@ export const MovieDetailUIConfig = {
   // Poster configuration for movie poster display
   poster: {
     width: "250px", // Fixed width of the movie poster image
-    position: "right", // Controls poster position: 'left' places poster on left side, 'right' on right side
+    position: "left", // Poster position: 'left' places poster on left side, 'right' on right side
     aspectRatio: "2/3", // Standard movie poster aspect ratio (width:height)
   },
 
