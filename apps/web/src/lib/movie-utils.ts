@@ -1,4 +1,4 @@
-import type { Movie } from "@/shared/types/movie";
+import type { Movie } from "@/types/movie";
 
 export function transformMovieData(movie: any): Movie {
   // Ensure main_poster and main_backdrop are strings before using them

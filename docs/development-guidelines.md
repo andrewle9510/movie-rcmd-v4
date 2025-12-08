@@ -126,31 +126,15 @@ After implementation:
 For new features in web app:
 ```
 apps/web/src/
-├── app/
-│   ├── shared/              # Layout providers (Convex, theme)
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── [feature]/           # Nested routes
 ├── features/
-│   ├── movie-browsing/      # Example feature
+│   ├── movie-browser/
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── utils/
-│   │   ├── types/
-│   │   └── index.ts
-│   └── movie-detail/        # Example feature
-│       ├── components/
-│       ├── hooks/
-│       ├── utils/
-│       ├── types/
-│       └── index.ts
+│   │   └── types/
 └── shared/
     ├── components/
-    ├── providers/
-    ├── hooks/
-    ├── types/
-    ├── utils/
-    └── constants/
+    └── utils/
 ```
 
 ### Package-Specific Structure

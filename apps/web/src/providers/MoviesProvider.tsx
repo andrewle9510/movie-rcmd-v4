@@ -10,7 +10,7 @@ import {
   getCacheStatus,
   isCacheMoviesDataStale,
   saveDbFetchTime
-} from "@/features/movie-browsing/utils/movie-cache";
+} from "@/lib/movie-cache";
 
 interface MoviesContextType {
   movies: any[] | undefined;

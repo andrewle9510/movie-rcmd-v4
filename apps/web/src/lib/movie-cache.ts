@@ -125,7 +125,7 @@ export const getCacheStatus = (): MovieCacheStatus => {
 export const getLastFetchTime = (): string | null => {
   try {
     if (typeof window !== 'undefined') {
-      const timestamp = localStorage.getItem(MOVIES_CACHE_TIMESTAMP_KEY);
+      const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
       if (timestamp) {
         return new Date(parseInt(timestamp)).toLocaleString();
       }

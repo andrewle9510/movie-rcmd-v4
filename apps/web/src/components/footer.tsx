@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { getDbFetchTime } from "@/features/movie-browsing/utils/movie-cache";
+import { getDbFetchTime } from "@/lib/movie-cache";
 
 export function Footer() {
   const [moviesDataVersion, setMoviesDataVersion] = useState<string>("");

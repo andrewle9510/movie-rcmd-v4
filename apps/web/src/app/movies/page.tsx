@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MovieCard, type GridSize } from "@/features/movie-browsing/components/movie-card";
-import { GridControls } from "@/features/movie-browsing/components/grid-controls";
-import { PaginationControls } from "@/features/movie-browsing/components/pagination-controls";
-import { useMovies } from "@/features/movie-browsing/hooks/use-movie-browsing";
-import { MovieBrowsingUIConfig } from "@/features/movie-browsing/utils/movie-browsing-ui-config";
-import { useMoviesContext } from "@/shared/providers/MoviesProvider";
+import { MovieCard, type GridSize } from "@/components/movie-card";
+import { GridControls } from "@/components/grid-controls";
+import { PaginationControls } from "@/components/pagination-controls";
+import { useMovies } from "@/hooks/use-movie-browsing";
+import { MovieBrowsingUIConfig } from "@/config/movie-browsing-ui-config";
+import { useMoviesContext } from "@/providers/MoviesProvider";
 
 const ITEMS_PER_PAGE = 12;
 

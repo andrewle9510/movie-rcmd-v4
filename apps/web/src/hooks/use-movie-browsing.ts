@@ -2,10 +2,10 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { transformMovieData } from "../utils/movie-utils";
-import type { Movie } from "@/shared/types/movie";
+import { transformMovieData } from "@/lib/movie-utils";
+import type { Movie } from "@/types/movie";
 import { useMemo } from "react";
-import { useMoviesContext } from "@/shared/providers/MoviesProvider";
+import { useMoviesContext } from "@/providers/MoviesProvider";
 
 interface UseMoviesParams {
   searchQuery?: string;

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { CacheInitializer } from "@/components/cache-initializer";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,25 +18,22 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const getBodyStyles = {
-    fontFamily: 'Inter, sans-serif',
-    margin: 0,
-    padding: 0,
-    minHeight: "100vh"
-  };
-
-  const getMainContainerStyles = {
-    minHeight: "100vh"
-  };
-
   return (
     <html lang="en" suppressHydrationWarning>
-      <body style={getBodyStyles}>
-        <CacheInitializer />
+      <body className={inter.className}>
         <ConvexClientProvider>
-          <div style={getMainContainerStyles}>
-            {children}
-          </div>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </ThemeProvider>
         </ConvexClientProvider>
       </body>
     </html>

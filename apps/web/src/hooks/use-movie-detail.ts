@@ -2,11 +2,11 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { transformMovieData } from "../../movie-browsing/utils/movie-utils";
+import { transformMovieData } from "@/lib/movie-utils";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useMoviesContext } from "@/shared/providers/MoviesProvider";
+import { useMoviesContext } from "@/providers/MoviesProvider";
 import { useMemo, useRef } from "react";
-import type { Movie } from "@/shared/types/movie";
+import type { Movie } from "@/types/movie";
 
 interface MovieResult {
   movie: Movie | undefined | null;

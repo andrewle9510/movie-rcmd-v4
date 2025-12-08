@@ -1,0 +1,177 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { MovieCard, type GridSize } from "@/components/movie-card";
+import { MovieCardSkeleton } from "@/components/movie-card-skeleton";
+import { GridControls } from "@/components/grid-controls";
+import { PaginationControls } from "@/components/pagination-controls";
+import { useMovies } from "@/hooks/use-movies";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+const ITEMS_PER_PAGE = 12;
+
+export default function MoviesPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [genreFilter, setGenreFilter] = useState("");
+  const [gridSize, setGridSize] = useState<GridSize>("medium");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { movies, genres, isLoading, error } = useMovies({
+    searchQuery,
+    genreFilter,
+    limit: 100, // Get more items for pagination
+  });
+
+  const handleSeeding = async () => {
+    try {
+      // This would be handled through Convex mutations in a real implementation
+      console.log("Seeding sample movies...");
+    } catch (err) {
+      console.error("Failed to seed movies:", err);
+    }
+  };
+
+  const getGridCols = () => {
+    if (viewMode === "list") {
+      return "grid-cols-1";
+    }
+
+    switch (gridSize) {
+      case "small":
+        return "grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7";
+      case "large":
+        return "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5";
+      default:
+        return "grid-cols-4";
+    }
+  };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, genreFilter]);
+
+  // Calculate pagination
+  const filteredMovies = movies || [];
+  const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedMovies = filteredMovies.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 glass-card">
+          <h2 className="text-lg font-semibold">Error loading movies</h2>
+          <p className="text-sm">
+            There was a problem fetching the movie data.
+          </p>
+          <Button onClick={() => window.location.reload()} className="mt-2 hover-lift">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 text-4xl font-bold gradient-text">Browse Movies</h1>
+        <p className="text-lg text-muted-foreground text-shadow">
+          Discover and explore our collection of amazing movies
+        </p>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <Input
+              type="text"
+              placeholder="Search movies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-sm search-input"
+            />
+            <GridControls
+              gridSize={gridSize}
+              viewMode={viewMode}
+              onGridSizeChange={setGridSize}
+              onViewModeChange={setViewMode}
+            />
+          </div>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <>
+          <div
+            className={`grid movie-grid-with-spacing ${getGridCols()}`}
+          >
+            {Array.from({ length: 12 }).map((_, index) => (
+              <MovieCardSkeleton
+                key={index}
+                gridSize={gridSize}
+                viewMode={viewMode}
+              />
+            ))}
+          </div>
+        </>
+      ) : paginatedMovies.length > 0 ? (
+        <>
+          <div
+            className={`grid movie-grid-with-spacing ${getGridCols()}`}
+          >
+            {paginatedMovies.map((movie) => (
+              <MovieCard
+                key={movie._id}
+                movie={movie}
+                gridSize={gridSize}
+                viewMode={viewMode}
+                onAddToWatchlist={(movieId) => {
+                  console.log("Added to watchlist:", movieId);
+                  // TODO: Implement watchlist functionality
+                }}
+              />
+            ))}
+          </div>
+
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredMovies.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
+        </>
+      ) : (
+        <div className="text-center py-16">
+          <div className="mb-6">
+            <div className="text-6xl mb-4">🎬</div>
+            <h3 className="mb-2 text-2xl font-semibold text-foreground">No movies found</h3>
+            <p className="text-muted-foreground mb-6 text-shadow">
+              {searchQuery || genreFilter
+                ? "Try adjusting your search or filter criteria to find what you're looking for."
+                : "No movies are available in the database at the moment."}
+            </p>
+          </div>
+          {!searchQuery && !genreFilter && (
+            <div className="space-y-3">
+              <Button onClick={handleSeeding} size="lg" className="px-8 hover-lift">
+                Load Sample Movies
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                This will add some example movies to browse
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
