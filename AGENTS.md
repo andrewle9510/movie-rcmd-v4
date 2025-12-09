@@ -10,3 +10,9 @@ Use these guidelines to learn:
 - Naming conventions: `docs/naming-conventions.md`
 - Environment setup: `docs/environment-setup.md`
 - File and folder creation: `docs/file-folder-creation-rules.md`
+
+## Feature Documentation
+
+Feature docs are located in `docs/features/`:
+- `movie-browsing.md` - Movie browsing, pagination, grid layout, filtering, and caching
+- `movie-detail.md` - Movie detail view, screenshot carousel, image overrides, and responsive layout

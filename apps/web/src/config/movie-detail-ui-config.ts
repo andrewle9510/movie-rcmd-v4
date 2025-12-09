@@ -26,7 +26,7 @@ export const MovieDetailUIConfig = {
   // Poster configuration for movie poster display
   poster: {
     width: "250px", // Fixed width of the movie poster image
-    position: "right", // Controls poster position: 'left' places poster on left side, 'right' on right side
+    position: "left", // Controls poster position: 'left' places poster on left side, 'right' on right side
     aspectRatio: "2/3", // Standard movie poster aspect ratio (width:height)
   },
 

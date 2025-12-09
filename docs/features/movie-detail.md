@@ -18,59 +18,62 @@
 
 ## Functioning Purpose
 
-- **`movies/[movieId]/page.tsx`**: The dynamic page component that renders detailed information about a specific movie in a cinematic layout. Accepts movieId from URL (can be Convex ID or TMDB ID). Uses `useMovie()` hook to fetch movie data. Manages screenshot carousel state (`currentScreenshotIndex`) for navigating through available screenshots. Renders hero backdrop section using screenshots (if available) or regular backdrop at configurable height with optional bottom gradient fade. Implements screenshot carousel logic: builds screenshot URLs from template by replacing `{screenshot_id}` with current index, handles next/previous navigation with wrap-around, resets index when movie changes. Supports keyboard navigation (arrow left/right). Main content area overlaps backdrop via negative margin. Dynamically determines poster positioning (left/right) based on `MovieDetailUIConfig.poster.position`. Checks `MovieDetailImageConfig` for manual poster/backdrop filepath overrides by TMDB ID (only when no screenshots). Displays title, year, duration, genres, tagline, synopsis, rating, and release date in structured format with Tailwind styling.
+- **`movies/[movieId]/page.tsx`**: Dynamic page component rendering detailed information about a specific movie in cinematic layout. Accepts movieId from URL (Convex ID or TMDB ID). Uses `useMovie()` hook to fetch movie data via appropriate Convex query. Manages screenshot carousel state with `currentScreenshotIndex` (0 = main backdrop, 1-10 = screenshots). Builds screenshot URLs by replacing `{screenshot_id}` placeholder in screenshotUrl template with current ID from screenshotIdList. Implements carousel logic: next/previous navigation with wrap-around modulo arithmetic. Preloads adjacent images for smooth transitions. Supports keyboard navigation (ArrowLeft/ArrowRight). Cross-fade animation between images using opacity transitions. Renders hero backdrop section at configurable height with optional bottom gradient fade. Applies flex layout with flex-row or flex-row-reverse based on poster.position config. Main content overlaps backdrop via negative margin. Checks MovieDetailImageConfig for manual poster/backdrop filepath overrides by TMDB ID. Displays title with release year, duration and genre tags, tagline with left border accent, synopsis paragraph, and stats grid with rating and formatted release date.
 
-- **`movie-detail-ui-config.ts`**: Centralized configuration object defining visual constants: backdrop height (500px), content negative margin (-2rem for overlap effect), section gap (2.5rem), poster width (250px), poster aspect ratio (2/3), backdrop opacity (0-1), bottom fade gradient (enabled/disabled, height, intensity: soft/medium/hard), and carousel controls (icon size, padding, background colors, positioning). All values are easily tweakable without modifying component code.
+- **`movie-detail-ui-config.ts`**: Centralized configuration object defining visual constants: layout (backdrop height 500px, content negative margin -2rem overlap, gap 2.5rem between sections), backdrop (opacity 0-1, loadingOpacity 0.5, transition durations for loading and screenshot switching, bottom fade settings with intensity soft/medium/hard), poster (width 250px, position left/right, aspect ratio 2/3), and carousel controls (icon size, padding, background colors for idle/hover, positioning from bottom/sides). All values tweakable without component code modifications.
 
-- **`movie-detail-backdrop-poster-config.ts`**: Configuration object mapping TMDB IDs to image override objects. For specific movies, you can define custom `posterFilepath` and/or `backdropFilepath` as TMDB filepaths. When configured, these override the default main_poster/main_backdrop from the database. Allows precise control over which images display for specific movies, useful for fixing poor defaults or curating specific versions.
+- **`movie-detail-backdrop-poster-config.ts`**: Configuration object mapping TMDB IDs to image override objects. For specific movies, define custom `posterFilepath` and/or `backdropFilepath` as TMDB filepaths. Overrides default main_poster/main_backdrop from database. Only applied when no screenshots available. Enables precise control over visual presentation for specific movies.
 
-- **`use-movie-detail.ts`**: Custom hook that fetches individual movie data. Detects if movieId parameter is numeric (TMDB ID) or alphanumeric (Convex ID). Queries Convex API with appropriate query (`getMovie` for Convex ID, `getMovieByTmdbId` for TMDB ID). Returns movie object (transformed via `transformMovieData()`), isLoading state, and error message. Handles both query types transparently.
+- **`use-movie-detail.ts`**: Hook fetching individual movie data with dual query support. Detects movieId type: numeric = TMDB ID, alphanumeric = Convex ID. First checks MoviesProvider cache via useMoviesContext. If found in cache, returns immediately without Convex query (performance optimization). If not cached, queries Convex: `api.movies.getMovie` for Convex ID or `api.movies.getMovieByTmdbId` for TMDB ID. Uses useRef to maintain stable cached result across re-renders. Returns transformed movie via `transformMovieData()`, isLoading state, and error message.
 
-- **`movie-utils.ts`**: Transforms raw Convex movie documents to frontend Movie interface. Constructs TMDB image URLs from filepaths: poster images use w500 width for smaller file size, backdrop images use original dimensions for quality. Exposes screenshot data fields (`screenshot_url` template and `screenshot_id_list`). Handles missing data gracefully. Maps database field names (tmdb_id, main_poster, main_backdrop, release_date, vote_pts_system, runtime_minutes, screenshot_url, screenshot_id_list, etc.) to frontend interface.
+- **`movie-utils.ts`**: Transforms raw Convex documents to frontend Movie interface. Constructs TMDB image URLs: w500 width for posters (smaller file size), original dimensions for backdrops (quality). Extracts screenshot data fields (screenshotUrl template and screenshotIdList). Handles missing data gracefully. Maps database field names (tmdb_id → tmdbId, main_poster → posterUrl, main_backdrop → backdropUrl, release_date → releaseDate, vote_pts_system.tmdb → rating, runtime_minutes → duration, etc.) to frontend interface.
 
-- **`movie.ts`**: Defines Movie interface with fields: _id (string), title, description, posterUrl, backdropUrl, tagline, releaseDate, genres (array), rating (number), duration (minutes), director, cast (array), tmdbId (number), screenshotUrl (template string with `{screenshot_id}` placeholder), screenshotIdList (array of screenshot IDs). Ensures type safety for all movie data.
+- **`movie.ts`**: Defines Movie interface with fields: _id (string), title, description, posterUrl, backdropUrl, tagline, releaseDate, genres (array), rating (number), duration (minutes), director, cast (array), tmdbId (number), screenshotUrl (template string with `{screenshot_id}` placeholder), screenshotIdList (array of screenshot IDs). Ensures type safety throughout feature.
 
-- **`BackdropCarouselControls.tsx`**: Reusable carousel navigation component rendering left/right arrow buttons (ChevronLeft/ChevronRight icons from lucide-react). Positioned absolutely at bottom-left and bottom-right of parent container. Only renders when `show` prop is true (i.e., when screenshots are available). Styled using `MovieDetailUIConfig.carouselControls` for transparent background (bg-black/30), hover effects, and positioning. Supports ARIA labels and title tooltips showing current/total count.
+- **`BackdropCarouselControls.tsx`**: Carousel navigation component rendering left/right ChevronLeft/ChevronRight buttons. Positioned absolutely at bottom-left and bottom-right of backdrop. Conditionally renders based on `show` prop (true when screenshots or backdrop available). Styled using MovieDetailUIConfig.carouselControls (bg-black/40 idle, bg-white/40 hover, text-white icons). Displays current/total count in tooltip (e.g., "2/11").
 
-- **`movies/layout.tsx`**: Provides consistent layout structure for the movie detail page via MoviesProvider, maintaining UI consistency with the browsing experience.
+- **`movies/layout.tsx`**: Layout wrapper applying MoviesProvider context to movie detail pages. Includes Footer component. Maintains UI consistency with browsing experience.
 
 ## Interaction
 
 The movie detail feature creates a comprehensive cinematic view of individual movies through interconnected components:
 
-1. **Navigation**: When a user clicks on a movie card from the browsing page, the app routes to `movies/[movieId]/page.tsx` with the specific movie ID (either Convex ID or TMDB ID).
+1. **Navigation**: User clicks movie card from browsing page or directly accesses `/movies/{movieId}` URL. URL parameter (movieId) can be Convex ID (alphanumeric) or TMDB ID (numeric).
 
-2. **Movie Fetching**: The page component calls `useMovie(movieId)` hook. The hook detects ID type (numeric = TMDB ID, alphanumeric = Convex ID) and queries the appropriate Convex function.
+2. **Movie Fetching**: Page calls `useMovie(movieId)` hook. Hook detects ID type and checks MoviesProvider cache first for fast retrieval. If cached, returns immediately without Convex query. Otherwise queries Convex: `api.movies.getMovie` for Convex ID or `api.movies.getMovieByTmdbId` for TMDB ID.
 
-3. **Dual Query Support**: Hook uses conditional Convex queries: `api.movies.getMovie` for Convex IDs, `api.movies.getMovieByTmdbId` for TMDB IDs. Returns loading state during fetch.
+3. **Cache Strategy**: useMovie uses useRef to maintain stable cached result across re-renders. Prevents re-renders from Convex query updates. Memoizes ID type detection to avoid unnecessary recalculation.
 
-4. **Data Transformation**: Once fetched, movie data is transformed via `transformMovieData()` which builds TMDB image URLs from filepaths (w500 for posters, original for backdrops) and exposes screenshot data (`screenshotUrl` template and `screenshotIdList` array).
+4. **Data Transformation**: Fetched movie data flows through `transformMovieData()` which builds TMDB image URLs (w500 for posters, original for backdrops) and exposes screenshot data (screenshotUrl template and screenshotIdList array).
 
-5. **Screenshot Carousel Initialization**: Page initializes `currentScreenshotIndex` state to 0. On movie change (movieId dependency), index resets to 0. Carousel logic checks if `screenshotIdList` exists and has items to determine `hasScreenshots`.
+5. **Initial State Setup**: Page initializes `currentScreenshotIndex` to 0 (main backdrop). Sets `imageLoaded` to false. On movieId change, resets both states. Determines `hasScreenshots` by checking if screenshotIdList exists and has length > 0.
 
-6. **Image Override Check**: Page checks `MovieDetailImageConfig` by TMDB ID. If a movie has a configured override and no screenshots are available, those custom filepaths replace the default poster/backdrop URLs before rendering.
+6. **Screenshot URL Building**: `buildScreenshotUrl()` function handles two cases: index 0 returns backdropUrl (main image); indices 1+ replace `{screenshot_id}` placeholder with screenshotIdList[index-1]. Returns full https://screenmusings.org URL.
 
-7. **Screenshot URL Building**: For carousel images, `buildScreenshotUrl()` function replaces `{screenshot_id}` placeholder in `screenshotUrl` template with the current screenshot ID from `screenshotIdList[currentScreenshotIndex]`. Screenshots replace the backdrop image entirely when available.
+7. **Image Preloading**: useEffect preloads next and previous image URLs to enable smooth carousel transitions. Uses native Image() constructor for efficient memory usage.
 
-8. **Backdrop Rendering**: Hero backdrop section renders using configured height (500px by default) and displays either the current screenshot or fallback backdrop image. Image has configurable opacity. Bottom gradient fade is applied if enabled, with intensity (soft/medium/hard) mapped to CSS classes.
+8. **Keyboard Navigation**: useEffect attaches keydown listener for ArrowLeft/ArrowRight. Prevents default browser behavior and calls handlePreviousScreenshot/handleNextScreenshot. Modulo arithmetic ensures wrap-around navigation (0-10 range for 11 total images).
 
-9. **Carousel Controls Rendering**: `BackdropCarouselControls` component renders conditionally (only when `hasScreenshots` is true). Shows left/right navigation buttons positioned at bottom-left and bottom-right. Buttons pass current index and total count for display in tooltips.
+9. **Image Config Overrides**: Page checks MovieDetailImageConfig by TMDB ID. If override exists and no screenshots available, uses custom posterFilepath (w500) and backdropFilepath (original) instead of database defaults.
 
-10. **Navigation Interaction**: User can navigate screenshots via:
-    - **Mouse Click**: Click left/right buttons to move to previous/next screenshot
-    - **Keyboard**: Press ArrowLeft/ArrowRight keys to navigate
-    - **Wrap-Around**: Navigation wraps around (last screenshot → first, first → last) using modulo arithmetic
+10. **Backdrop Rendering**: Renders hero section at configurable height (500px). Uses Image component with fill layout for responsive sizing. Implements cross-fade animation: previous image fades out while new image fades in via opacity transitions controlled by loadingOpacity and screenshotTransitionDuration config values.
 
-11. **Layout Direction**: `flexDirection` is dynamically set based on `MovieDetailUIConfig.poster.position` ('left' = flex-row, 'right' = flex-row-reverse), allowing quick poster repositioning via config.
+11. **Gradient Fade**: If enabled in config, applies bottom gradient overlay (soft/medium/hard intensity) to smoothly transition backdrop to page background. Height and intensity are configurable.
 
-12. **Content Overlap Effect**: Negative margin pulls the content section up over the backdrop (default -2rem). Poster and details are positioned side-by-side with configurable gap spacing.
+12. **Carousel Controls**: `BackdropCarouselControls` renders conditionally when `hasScreenshots || movie?.backdropUrl`. Positioned absolutely at bottom-left and bottom-right of backdrop. Displays current/total count (e.g., "2/11" = second screenshot of 11 total images).
 
-13. **Information Display**: Page displays title, release year in serif font with drop-shadow, duration and genres in styled tags, tagline in italic with left border accent, synopsis paragraph, and stats grid with rating and release date.
+13. **Layout Direction**: `flexDirection` dynamically set based on MovieDetailUIConfig.poster.position: 'left' → flex-row, 'right' → flex-row-reverse. Enables quick poster repositioning via config change.
 
-14. **Responsive Behavior**: Flexbox layout stacks on small screens (flex-col) and uses flex-row or flex-row-reverse on medium screens (md:) based on poster.position config.
+14. **Content Overlap**: Negative margin (default -2rem) pulls content section up over backdrop edge, creating cinematic overlay effect. Poster maintains fixed width (250px) with 2:3 aspect ratio. Content area is flex-1 for responsive sizing.
 
-15. **Type Safety**: All data flowing through the component is validated by Movie interface, ensuring consistency across data transformation and rendering.
+15. **Information Display**: Renders title with release year in serif font, duration and genres in styled tags, tagline in italic with left border accent, synopsis paragraph with serif font, and stats grid (2-4 columns based on screen size) showing rating (/10) and formatted release date.
 
-16. **Consistent Navigation**: Shared `movies/layout.tsx` wraps both detail and browsing pages, ensuring MoviesProvider context is available and UI remains consistent.
+16. **Responsive Behavior**: Flex layout stacks vertically on mobile (flex-col) and horizontally on medium+ screens based on poster.position config. Poster width and info sections scale responsively.
 
-This architecture creates an immersive, cinematic movie detail experience with efficient data fetching from dual query types, flexible visual presentation via config, interactive screenshot carousel for visual exploration, and precise image curation via overrides. The centralized configuration approach eliminates the need to modify component code for layout or styling changes, and manual image overrides provide precise control over visual presentation for specific movies. The screenshot carousel with keyboard and mouse support enhances user engagement without complicating the interface.
+17. **Image Fallbacks**: If activePosterUrl unavailable, shows "No Poster" placeholder. If backdropUrl unavailable, shows muted background. Handles all image load states gracefully.
+
+18. **Type Safety**: All data validated by Movie interface ensuring consistency across transformation, caching, and rendering.
+
+19. **Loading State**: Shows movie data only when movie is available (not null/undefined). Shows "Movie not found" if not loading but movie is null.
+
+This architecture delivers an immersive cinematic experience with efficient dual-query caching, smooth image carousel with keyboard/mouse support, flexible config-driven layout, and precise image curation. The design minimizes code modifications while maximizing visual flexibility.
