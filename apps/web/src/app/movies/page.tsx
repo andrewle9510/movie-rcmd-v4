@@ -35,7 +35,7 @@ export default function MoviesPage() {
 
   const { movies, isLoading, error } = useMovies({
     searchQuery,
-    limit: 100, // Get more items for pagination
+    limit: 1000, // Fetch all movies for proper pagination
   });
 
   // Calculate pagination

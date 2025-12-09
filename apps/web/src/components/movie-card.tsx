@@ -244,7 +244,7 @@ export function MovieCard({ movie, gridSize = "medium", viewMode = "grid", onAdd
               width={viewMode === "list" ? 96 : undefined}
               height={viewMode === "list" ? 144 : undefined}
               style={viewMode === "list" ? getImageStyles() : undefined}
-              sizes={viewMode === "list" ? "96px" : undefined}
+              sizes={viewMode === "list" ? "96px" : "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"}
               onError={handleImageError}
             />
           ) : (

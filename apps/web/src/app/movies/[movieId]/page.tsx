@@ -211,6 +211,7 @@ export default function MovieDetailPage() {
                 src={prevDisplayUrl} 
                 alt="previous"
                 fill 
+                sizes="100vw"
                 className="object-cover backdrop-image-exit"
                 style={{ 
                   opacity: MovieDetailUIConfig.backdrop.opacity,
@@ -228,6 +229,7 @@ export default function MovieDetailPage() {
                 src={activeBackdropUrl} 
                 alt={`${movie.title} backdrop`}
                 fill 
+                sizes="100vw"
                 className={`object-cover ${imageLoaded ? 'backdrop-image-loading' : ''}`}
                 style={{ 
                   opacity: imageLoaded ? MovieDetailUIConfig.backdrop.opacity : MovieDetailUIConfig.backdrop.loadingOpacity,
@@ -236,6 +238,7 @@ export default function MovieDetailPage() {
                   '--transition-duration': MovieDetailUIConfig.backdrop.screenshotTransitionDuration,
                 } as React.CSSProperties & { '--loading-opacity': number; '--transition-duration': string }}
                 priority 
+                loading="eager"
                 unoptimized
                 onLoadingComplete={handleImageLoadingComplete}
               />
@@ -296,6 +299,7 @@ export default function MovieDetailPage() {
                   src={activePosterUrl}
                   alt={movie.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 280px"
                   className="object-cover"
                   priority
                   unoptimized
