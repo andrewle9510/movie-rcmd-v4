@@ -2,6 +2,43 @@
 // This config controls the layout, backdrop, and poster positioning
 // making it easy to adjust the visual design without modifying component logic
 
+export enum PosterPosition {
+  LEFT = "left",
+  RIGHT = "right",
+}
+
+export enum FontFamily {
+  // Styles
+  Headline = "var(--font-montserrat), sans-serif",
+  Body     = "var(--font-inter), sans-serif",
+  Classic  = "var(--font-playfair), serif",
+  Modern   = "var(--font-lato), sans-serif",
+}
+
+export enum FontSize {
+  Large  = "2.25rem",      // For main titles
+  Medium = "1.5rem",    // For taglines/subtitles
+  Small  = "1rem",  // For body text
+}
+
+export enum FontWeight {
+  Bold   = "700",
+  Medium = "500",
+  Regular = "300",
+}
+
+export enum FontStyle {
+  Normal = "normal",
+  Italic = "italic",
+}
+
+export enum TextColor {
+  White   = "text-white",
+  Light   = "text-gray-200",
+  Muted   = "text-gray-400",
+  Accent  = "text-blue-400",
+}
+
 export const MovieDetailUIConfig = {
   // Layout configuration for the movie detail page structure
   layout: {
@@ -26,7 +63,7 @@ export const MovieDetailUIConfig = {
   // Poster configuration for movie poster display
   poster: {
     width: "250px", // Fixed width of the movie poster image
-    position: "left", // Controls poster position: 'left' places poster on left side, 'right' on right side
+    position: PosterPosition.LEFT, // Controls poster position: 'left' places poster on left side, 'right' on right side
     aspectRatio: "2/3", // Standard movie poster aspect ratio (width:height)
   },
 
@@ -46,28 +83,49 @@ export const MovieDetailUIConfig = {
   // Header typography configuration
   headers: {
     title: {
-      fontFamily: "Montserrat", // Font family for movie title
-      fontSize: "2rem", // Size for movie title
-      fontWeight: "700", // Font weight for movie title (bold)
-      color: "text-white", // Text color for movie title
-      lineHeight: "1.2", // Line height for movie title
+      fontFamily: FontFamily.Headline, // Font family for movie title
+      fontSize: FontSize.Large, // Size for movie title
+      fontWeight: FontWeight.Bold, // Font weight for movie title (bold)
+      color: TextColor.White, // Text color for movie title
+      lineHeight: "1.1", // Line height for movie title
       letterSpacing: "-0.02em", // Letter spacing for movie title
     },
     releaseYear: {
-      fontFamily: "Inter", // Font family for release year
-      fontSize: "1.25rem", // Size for release year
-      fontWeight: "400", // Font weight for release year (normal)
+      fontFamily: FontFamily.Headline, // Font family for release year
+      fontSize: FontSize.Medium, // Size for release year (custom size, slightly larger than Small)
+      fontWeight: FontWeight.Regular, // Font weight for release year (normal)
       color: "text-gray-300", // Text color for release year
       lineHeight: "1.4", // Line height for release year
-      letterSpacing: "", // Letter spacing for release year
+      letterSpacing: "0.02em", // Letter spacing for release year
     },
     duration: {
-      fontFamily: "Inter", // Font family for movie duration
-      fontSize: "1.25rem", // Size for movie duration
-      fontWeight: "400", // Font weight for movie duration (medium)
-      color: "text-gray-400", // Text color for movie duration
+      fontFamily: FontFamily.Headline, // Font family for movie duration
+      fontSize: FontSize.Small, // Size for movie duration (custom size)
+      fontWeight: FontWeight.Regular, // Font weight for movie duration (medium)
+      color: TextColor.Muted, // Text color for movie duration
       lineHeight: "1.4", // Line height for movie duration
-      letterSpacing: "", // Letter spacing for movie duration
+      letterSpacing: "0.02em", // Letter spacing for movie duration
     },
   },
-} as const;
+
+  // Tagline configuration
+  tagline: {
+    fontFamily: FontFamily.Headline, // Matches title font
+    fontSize: FontSize.Small,
+    fontWeight: FontWeight.Regular,
+    color: TextColor.Light,
+    lineHeight: "1.4",
+    fontStyle: FontStyle.Italic,
+    marginBottom: "2rem",
+  },
+
+  // Description configuration
+  description: {
+    fontFamily: FontFamily.Modern, // Clean sans-serif for reading
+    fontSize: FontSize.Small, // 18px
+    fontWeight: FontWeight.Regular,
+    color: "text-gray-100",
+    lineHeight: "1.8", // Loose leading for readability
+    maxWidth: "65ch", // Optimal reading width
+  },
+};

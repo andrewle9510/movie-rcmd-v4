@@ -4,7 +4,7 @@ import { useMovie } from "@/hooks/use-movie-detail";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { MovieDetailUIConfig } from "@/config/movie-detail-ui-config";
+import { MovieDetailUIConfig, PosterPosition } from "@/config/movie-detail-ui-config";
 import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
 import { BackdropCarouselControls } from "@/components/backdrop-carousel-controls";
 
@@ -34,6 +34,9 @@ export default function MovieDetailPage() {
   const [currentScreenshotIndex, setCurrentScreenshotIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  // Resolve configured images
+  const imageConfig = movie?.tmdbId ? MovieDetailImageConfig[Number(movie.tmdbId)] : undefined;
+
   console.log("🎬 MovieDetailPage render, movie:", movie?.title, "isLoading:", isLoading);
 
   if (error) {
@@ -56,11 +59,16 @@ export default function MovieDetailPage() {
   const hasScreenshots = movie?.screenshotIdList && movie.screenshotIdList.length > 0;
   const screenshotCount = movie?.screenshotIdList?.length || 0;
 
-  const buildScreenshotUrl = (index: number): string => {
+  const buildCarouselUrl = (index: number): string => {
     // Index 0 is the main backdrop
     if (index === 0) {
+      if (imageConfig?.backdropFilepath) {
+        const backdropPath = imageConfig.backdropFilepath;
+        return `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
+      }
       return movie?.backdropUrl || '';
     }
+
     // Indices 1+ are screenshots (offset by 1 in the array)
     if (!movie?.screenshotUrl || !movie.screenshotIdList || !movie.screenshotIdList[index - 1]) {
       return '';
@@ -121,13 +129,13 @@ export default function MovieDetailPage() {
 
   // currentScreenshotIndex is 0-10: index 0 is backdrop, indices 1-10 are screenshots
   // Display the image at current index
-  const displayUrl = buildScreenshotUrl(currentScreenshotIndex);
+  const displayUrl = buildCarouselUrl(currentScreenshotIndex);
 
   // Preload next and previous images
   const nextIndex = (currentScreenshotIndex + 1) % totalImages;
   const prevIndex = (currentScreenshotIndex - 1 + totalImages) % totalImages;
-  const nextUrl = buildScreenshotUrl(nextIndex);
-  const prevUrl = buildScreenshotUrl(prevIndex);
+  const nextUrl = buildCarouselUrl(nextIndex);
+  const prevUrl = buildCarouselUrl(prevIndex);
 
   // Preload images using effect
   useEffect(() => {
@@ -150,12 +158,10 @@ export default function MovieDetailPage() {
   }, [displayUrl, imageLoaded, prevDisplayUrl]);
 
   // Determine flex direction based on config
-  const flexDirection = MovieDetailUIConfig.poster.position === 'right'
+  const posterPosition: PosterPosition = MovieDetailUIConfig.poster.position;
+  const flexDirection = posterPosition === PosterPosition.RIGHT
     ? 'md:flex-row-reverse'
     : 'md:flex-row';
-
-  // Resolve configured images
-  const imageConfig = movie?.tmdbId ? MovieDetailImageConfig[movie.tmdbId] : undefined;
 
   // Resolve Poster URL
   let activePosterUrl = movie?.posterUrl || '';
@@ -163,14 +169,6 @@ export default function MovieDetailPage() {
     // Use manual file path if provided
     const posterPath = imageConfig.posterFilepath;
     activePosterUrl = `https://image.tmdb.org/t/p/w500${posterPath.startsWith('/') ? '' : '/'}${posterPath}`;
-  }
-
-  // Display current image (index 0 is backdrop, indices 1-10 are screenshots)
-  let activeBackdropUrl = displayUrl || movie?.backdropUrl || '';
-  if (imageConfig?.backdropFilepath && !displayUrl) {
-    // Use manual file path only if no displayUrl available
-    const backdropPath = imageConfig.backdropFilepath;
-    activeBackdropUrl = `https://image.tmdb.org/t/p/original${backdropPath.startsWith('/') ? '' : '/'}${backdropPath}`;
   }
 
   // Update imageLoaded when new image loads
@@ -203,10 +201,10 @@ export default function MovieDetailPage() {
         className="relative w-full bg-muted overflow-hidden"
         style={{ height: MovieDetailUIConfig.layout.backdropHeight }}
       >
-        {(activeBackdropUrl || prevDisplayUrl) && (
+        {(displayUrl || prevDisplayUrl) && (
           <>
             {/* Previous image (fading out) */}
-            {prevDisplayUrl && prevDisplayUrl !== activeBackdropUrl && !imageLoaded && (
+            {prevDisplayUrl && prevDisplayUrl !== displayUrl && !imageLoaded && (
               <Image
                 src={prevDisplayUrl}
                 alt="previous"
@@ -223,10 +221,10 @@ export default function MovieDetailPage() {
             )}
 
             {/* Current image (fading in) */}
-            {activeBackdropUrl && (
+            {displayUrl && (
               <Image
                 key={`backdrop-${currentScreenshotIndex}`}
-                src={activeBackdropUrl}
+                src={displayUrl}
                 alt={`${movie.title} backdrop`}
                 fill
                 sizes="100vw"
@@ -354,42 +352,45 @@ export default function MovieDetailPage() {
                     letterSpacing: MovieDetailUIConfig.headers.duration.letterSpacing,
                   }}
                 >
-                {Math.floor(movie.duration / 60)}h {movie.duration % 60}m
+                {Math.floor(movie.duration / 60)}h{(movie.duration % 60).toString().padStart(2, '0')}
                 </span>
               )}
             </h1>
 
             {/* TAGLINE */}
             {movie.tagline && (
-              <p className="text-xl text-foreground/70 italic font-serif mb-10 border-l-4 border-primary/40 pl-4">
-                &ldquo;{movie.tagline}&rdquo;
+              <p
+                className={`mb-4 ${MovieDetailUIConfig.tagline.color}`}
+                style={{
+                  fontFamily: MovieDetailUIConfig.tagline.fontFamily,
+                  fontSize: MovieDetailUIConfig.tagline.fontSize,
+                  fontWeight: MovieDetailUIConfig.tagline.fontWeight,
+                  lineHeight: MovieDetailUIConfig.tagline.lineHeight,
+                  fontStyle: MovieDetailUIConfig.tagline.fontStyle,
+                  marginBottom: MovieDetailUIConfig.tagline.marginBottom,
+                }}
+              >
+                {movie.tagline}
               </p>
             )}
 
             {/* SYNOPSIS SECTION */}
-            <div className="mb-12 max-w-3xl">
-              <p className="text-lg leading-loose text-foreground/90 font-serif">
+            <div className="mb-12">
+              <p
+                className={`${MovieDetailUIConfig.description.color}`}
+                style={{
+                  fontFamily: MovieDetailUIConfig.description.fontFamily,
+                  fontSize: MovieDetailUIConfig.description.fontSize,
+                  fontWeight: MovieDetailUIConfig.description.fontWeight,
+                  lineHeight: MovieDetailUIConfig.description.lineHeight,
+                  maxWidth: MovieDetailUIConfig.description.maxWidth,
+                }}
+              >
                 {movie.description}
               </p>
             </div>
 
-            {/* STATS GRID */}
-            <div className="border-t border-border/40 pt-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div>
-                <span className="block text-xs font-bold text-foreground/50 uppercase tracking-widest mb-2">Rating</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-foreground">{movie.rating ? movie.rating.toFixed(1) : 'N/A'}</span>
-                  <span className="text-sm text-muted-foreground">/10</span>
-                </div>
-              </div>
 
-              <div>
-                <span className="block text-xs font-bold text-foreground/50 uppercase tracking-widest mb-2">Released</span>
-                <span className="text-lg text-foreground/90">
-                  {new Date(movie.releaseDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                </span>
-              </div>
-            </div>
 
           </div>
         </div>

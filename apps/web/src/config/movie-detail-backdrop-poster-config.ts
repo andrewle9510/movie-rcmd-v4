@@ -12,11 +12,11 @@ export const MovieDetailImageConfig: Record<
   // Example:
   // 550: { posterIndex: 1, backdropIndex: 0 } // Fight Club
   // 157336: { posterIndex: 0, backdropIndex: 2 } // Interstellar
-  1022789: {
+  1022789: { //inside out 2
     backdropFilepath: "/7U8EvrqZDPxafnucxWAttMaFYbc.jpg",
   },
   335984: { //blade runner 2049
     posterFilepath: "/xTwqmwpIefT6wWDgCQXdP8lpbI9.jpg",
-    //backdropFilepath: "/1DPPsKEOMqzqECuhezJuvzEnk9S.jpg",
+    backdropFilepath: "/47DnGS3vYyvzmPFiYagdl9ji4DC.jpg",
   },
 };

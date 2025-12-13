@@ -1,10 +1,33 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Montserrat, Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
 import { CacheInitializer } from "@/components/cache-initializer";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const lato = Lato({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-lato",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Movie Recommendation System",
@@ -17,7 +40,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const getBodyStyles = {
-    fontFamily: 'Inter, sans-serif',
     margin: 0,
     padding: 0,
     minHeight: "100vh"
@@ -29,7 +51,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body style={getBodyStyles}>
+      <body className={`${inter.variable} ${montserrat.variable} ${playfair.variable} ${lato.variable} font-sans`} style={getBodyStyles}>
         <CacheInitializer />
         <ConvexClientProvider>
           <div style={getMainContainerStyles}>
