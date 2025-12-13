@@ -25,6 +25,7 @@ export function transformMovieData(movie: any): Movie {
     rating: movie.vote_pts_system?.tmdb || undefined,
     duration: movie.runtime_minutes || undefined,
     director: undefined,
+    directorIds: movie.directors || [],
     cast: movie.cast || [],
     tmdbId: movie.tmdb_id,
     screenshotUrl: movie.screenshot_url || undefined,

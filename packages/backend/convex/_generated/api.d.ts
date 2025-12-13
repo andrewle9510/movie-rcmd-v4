@@ -16,6 +16,8 @@ import type * as lib_utils from "../lib/utils.js";
 import type * as migrations from "../migrations.js";
 import type * as movieDataInterfaces from "../movieDataInterfaces.js";
 import type * as movies from "../movies.js";
+import type * as people from "../people.js";
+import type * as peopleBackfill from "../peopleBackfill.js";
 import type * as tmdbFetcher from "../tmdbFetcher.js";
 import type * as tmdbLocalFetch from "../tmdbLocalFetch.js";
 import type * as user_events from "../user_events.js";
@@ -37,6 +39,8 @@ declare const fullApi: ApiFromModules<{
   migrations: typeof migrations;
   movieDataInterfaces: typeof movieDataInterfaces;
   movies: typeof movies;
+  people: typeof people;
+  peopleBackfill: typeof peopleBackfill;
   tmdbFetcher: typeof tmdbFetcher;
   tmdbLocalFetch: typeof tmdbLocalFetch;
   user_events: typeof user_events;

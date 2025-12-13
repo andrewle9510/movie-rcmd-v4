@@ -32,7 +32,7 @@
 
 - **`movie-utils.ts`**: Transforms raw Convex documents to frontend Movie interface. Constructs TMDB image URLs: w500 width for posters (smaller file size), original dimensions for backdrops (quality). Extracts screenshot data fields (screenshotUrl template and screenshotIdList). Handles missing data gracefully. Maps database field names (tmdb_id → tmdbId, main_poster → posterUrl, main_backdrop → backdropUrl, release_date → releaseDate, vote_pts_system.tmdb → rating, runtime_minutes → duration, etc.) to frontend interface.
 
-- **`movie.ts`**: Defines Movie interface with fields: _id (string), title, description, posterUrl, backdropUrl, tagline, releaseDate, genres (array), rating (number), duration (minutes), director, cast (array), tmdbId (number), screenshotUrl (template string with `{screenshot_id}` placeholder), screenshotIdList (array of screenshot IDs). Ensures type safety throughout feature.
+- **`movie.ts`**: Defines Movie interface used by the movie detail page. In addition to display fields (title, release year, duration, images, etc.), it exposes `directorIds` (TMDB person IDs) so the UI can render a “Directed by …” line by looking up names in the `people` table.
 
 - **`BackdropCarouselControls.tsx`**: Carousel navigation component rendering left/right ChevronLeft/ChevronRight buttons. Positioned absolutely at bottom-left and bottom-right of backdrop. Conditionally renders based on `show` prop (true when screenshots or backdrop available). Styled using MovieDetailUIConfig.carouselControls (bg-black/40 idle, bg-white/40 hover, text-white icons). Displays current/total count in tooltip (e.g., "2/11").
 
@@ -71,6 +71,8 @@ The movie detail feature creates a comprehensive cinematic view of individual mo
 14. **Content Overlap**: Negative margin (default -2rem) pulls content section up over backdrop edge, creating cinematic overlay effect. Poster maintains fixed width (250px) with 2:3 aspect ratio. Content area is flex-1 for responsive sizing.
 
 15. **Information Display**: Renders title with release year, duration and genres in styled tags using centralized typography config. Tagline rendered with configurable font style (italic/normal), size, and color. Synopsis paragraph uses optimized reading width and line height. Stats grid (2-4 columns based on screen size) showing rating (/10) and formatted release date.
+
+15.1. **Directors line**: When director IDs are available, the page renders a line directly under the title in the format `Directed by <name1>, <name2>`. Names are resolved via a Convex query to the `people` table (populated during TMDB import from the `credits` payload).
 
 16. **Responsive Behavior**: Flex layout stacks vertically on mobile (flex-col) and horizontally on medium+ screens based on poster.position config. Poster width and info sections scale responsively.
 

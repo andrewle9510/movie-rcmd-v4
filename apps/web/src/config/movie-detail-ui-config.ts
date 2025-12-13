@@ -19,6 +19,7 @@ export enum FontSize {
   Large  = "2.25rem",      // For main titles
   Medium = "1.5rem",    // For taglines/subtitles
   Small  = "1rem",  // For body text
+  Tiny   = "0.875rem", // For small labels and captions
 }
 
 export enum FontWeight {
@@ -102,25 +103,53 @@ export const MovieDetailUIConfig = {
       lineHeight: "1.4", // Line height for release year
       letterSpacing: "0.02em", // Letter spacing for release year
     },
-    duration: {
-      fontFamily: FontFamily.Headline, // Font family for movie duration
-      fontSize: FontSize.Small, // Size for movie duration (custom size)
-      fontWeight: FontWeight.Regular, // Font weight for movie duration (medium)
-      color: TextColor.Muted, // Text color for movie duration
-      lineHeight: "1.4", // Line height for movie duration
-      letterSpacing: "0.02em", // Letter spacing for movie duration
-    },
   },
 
   // Tagline configuration
   tagline: {
     fontFamily: FontFamily.Headline, // Matches title font
-    fontSize: FontSize.Small,
+    fontSize: FontSize.Tiny,
     fontWeight: FontWeight.Regular,
     color: TextColor.Light,
     lineHeight: "1.4",
     fontStyle: FontStyle.Italic,
-    marginBottom: "2rem",
+    marginBottom: "1rem",
+  },
+
+  // Directors configuration
+  directors: {
+    fontFamily: FontFamily.Headline, // Font family for directors text
+    fontSize: FontSize.Small, // Font size for directors text
+    fontWeight: FontWeight.Regular, // Font weight for directors text
+    color: TextColor.Light, // Text color for directors names
+    prefix: {
+      text: "Directed by", // Text before director names
+      color: TextColor.Muted, // Color for "Directed by" prefix
+    },
+    marginBottom: "1rem", // Space below directors section (matches mb-4)
+    dropShadow: "drop-shadow-sm", // Drop shadow for readability
+  },
+
+  // Duration configuration
+  duration: {
+    fontFamily: FontFamily.Headline, // Font family for movie duration
+    fontSize: FontSize.Small, // Size for movie duration
+    fontWeight: FontWeight.Regular, // Font weight for movie duration
+    color: TextColor.Muted, // Text color for movie duration
+    lineHeight: "1.4", // Line height for movie duration
+    letterSpacing: "0.02em", // Letter spacing for movie duration
+  },
+
+  // Genre configuration
+  genre: {
+    fontFamily: FontFamily.Headline, // Font family for genre text
+    fontSize: FontSize.Small, // Font size for genre text
+    fontWeight: FontWeight.Regular, // Font weight for genre text
+    color: TextColor.Accent, // Text color for genre
+    lineHeight: "1.4", // Line height for genre
+    letterSpacing: "0.02em", // Letter spacing for genre
+    separator: " • ", // Separator between elements on same line
+    marginBottom: "1rem", // Space below directors/genre/duration line
   },
 
   // Description configuration

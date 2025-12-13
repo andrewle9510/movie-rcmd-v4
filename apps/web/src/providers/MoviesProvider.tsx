@@ -44,6 +44,12 @@ export function MoviesProvider({ children }: { children: ReactNode }) {
       if (cachedMovies) {
         // Use cached data immediately if available
         console.log("📦 Setting movies from cache, count:", cachedMovies.length);
+
+        if (process.env.NODE_ENV === "development" && cachedMovies.length > 0) {
+          const randomIndex = Math.floor(Math.random() * cachedMovies.length);
+          console.log("🎲 Random cached movie:", cachedMovies[randomIndex]);
+        }
+
         const cacheStatus = getCacheStatus();
         setMovies(cachedMovies);
         moviesDataVersionRef.current = cacheStatus.moviesDataVersion;

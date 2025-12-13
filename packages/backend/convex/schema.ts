@@ -63,6 +63,15 @@ export default defineSchema({
     .index("by_tmdb_id", ["tmdb_id"])
     .index("by_slug", ["slug"]),
 
+  people: defineTable({
+    tmdb_person_id: v.number(),
+    name: v.string(),
+    profile_path: v.union(v.string(), v.null()),
+    department: v.union(v.string(), v.null()),
+    character: v.union(v.string(), v.null()),
+    updated_at: v.string(),
+  }).index("by_tmdb_person_id", ["tmdb_person_id"]),
+
   users: defineTable({
     name: v.string(),
     email: v.string(),

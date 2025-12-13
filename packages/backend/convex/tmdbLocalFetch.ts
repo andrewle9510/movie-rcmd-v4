@@ -2,7 +2,7 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { fetchFromTmdb, transformTmdbMovieToDbStructure } from "./tmdbFetcher";
+import { extractPeopleFromCredits, fetchFromTmdb, transformTmdbMovieToDbStructure } from "./tmdbFetcher";
 
 // Action to fetch and save a single movie from TMDB to local file
 export const fetchAndSaveMovie = action({
@@ -20,6 +20,12 @@ export const fetchAndSaveMovie = action({
 
       // Transform TMDB data to database structure
       const dbStructureData = await transformTmdbMovieToDbStructure(tmdbMovie);
+
+      // Upsert people (directors + top-N cast) from credits payload (no extra TMDB calls)
+      const people = extractPeopleFromCredits(tmdbMovie);
+      if (people.length > 0) {
+        await ctx.runMutation(internal.people.upsertPeople, { people });
+      }
 
       // Create the file structure 
       const movieData = {

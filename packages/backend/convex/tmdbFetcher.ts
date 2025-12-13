@@ -113,9 +113,47 @@ export const fetchTopRatedMovieIds = action({
   }
 });
 
-export async function transformTmdbMovieToDbStructure(movie: TmdbMovieResponse): Promise<DbMovieStructure> {
-  // Get extended movie details (with credits)
-  const movieDetails = await fetchFromTmdb(`/movie/${movie.id}`, { append_to_response: 'credits,videos,keywords,release_dates' });
+export function extractPeopleFromCredits(movieDetails: any): Array<{
+  tmdb_person_id: number;
+  name: string;
+  profile_path: string | null;
+  department: string | null;
+  character: string | null;
+  updated_at: string;
+}> {
+  const updated_at = new Date().toISOString();
+
+  const directors = (movieDetails.credits?.crew || [])
+    .filter((person: any) => person.job === "Director")
+    .map((person: any) => ({
+      tmdb_person_id: person.id,
+      name: person.name,
+      profile_path: person.profile_path ?? null,
+      department: person.known_for_department ?? person.department ?? null,
+      character: null,
+      updated_at,
+    }));
+
+  const castTopN = (movieDetails.credits?.cast || [])
+    .sort((a: any, b: any) => a.order - b.order)
+    .slice(0, 10)
+    .map((person: any) => ({
+      tmdb_person_id: person.id,
+      name: person.name,
+      profile_path: person.profile_path ?? null,
+      department: person.known_for_department ?? person.department ?? null,
+      character: person.character ?? null,
+      updated_at,
+    }));
+
+  const byId = new Map<number, any>();
+  for (const p of [...directors, ...castTopN]) {
+    byId.set(p.tmdb_person_id, p);
+  }
+  return Array.from(byId.values());
+}
+
+export async function transformTmdbMovieToDbStructure(movieDetails: TmdbMovieResponse): Promise<DbMovieStructure> {
 
   // Extract directors from crew
   const directors = movieDetails.credits?.crew

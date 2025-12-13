@@ -1,12 +1,15 @@
 "use client";
 
 import { useMovie } from "@/hooks/use-movie-detail";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { MovieDetailUIConfig, PosterPosition } from "@/config/movie-detail-ui-config";
 import { MovieDetailImageConfig } from "@/config/movie-detail-backdrop-poster-config";
 import { BackdropCarouselControls } from "@/components/backdrop-carousel-controls";
+import { getPeopleFromCache, savePeopleToCache } from "@/lib/people-cache";
 
 const fadeInStyles = `
   @keyframes fadeIn {
@@ -31,6 +34,12 @@ export default function MovieDetailPage() {
   const movieId = params.movieId as string;
   const result = useMovie(movieId);
   const { movie, isLoading, error } = result;
+  const directorIds = movie?.directorIds || [];
+  const cachedDirectorsMap = directorIds.length > 0 ? getPeopleFromCache(directorIds) : {};
+  const directorsPeople = useQuery(
+    api.people.getPeopleByTmdbIds,
+    directorIds.length > 0 ? { ids: directorIds } : "skip"
+  );
   const [currentScreenshotIndex, setCurrentScreenshotIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -54,6 +63,20 @@ export default function MovieDetailPage() {
   }
 
   const releaseYear = movie?.releaseDate ? new Date(movie?.releaseDate).getFullYear() : null;
+
+  useEffect(() => {
+    if (directorsPeople && Array.isArray(directorsPeople) && directorsPeople.length > 0) {
+      savePeopleToCache(directorsPeople);
+    }
+  }, [directorsPeople]);
+
+  const directorNames = directorIds.length > 0
+    ? directorIds
+        .map((id) => cachedDirectorsMap[id]?.name || directorsPeople?.find((p: any) => p.tmdb_person_id === id)?.name)
+        .filter(Boolean)
+    : [];
+
+  const shouldShowDirectorPlaceholder = directorIds.length > 0 && directorNames.length === 0 && directorsPeople === undefined;
 
   // Screenshot carousel logic
   const hasScreenshots = movie?.screenshotIdList && movie.screenshotIdList.length > 0;
@@ -355,21 +378,60 @@ export default function MovieDetailPage() {
                   ({releaseYear})
                 </span>
               )}
-              {movie.duration && (
-                <span
-                  className={`ml-3 ${MovieDetailUIConfig.headers.duration.color}`}
-                  style={{
-                    fontFamily: MovieDetailUIConfig.headers.duration.fontFamily,
-                    fontSize: MovieDetailUIConfig.headers.duration.fontSize,
-                    fontWeight: MovieDetailUIConfig.headers.duration.fontWeight,
-                    lineHeight: MovieDetailUIConfig.headers.duration.lineHeight,
-                    letterSpacing: MovieDetailUIConfig.headers.duration.letterSpacing,
-                  }}
-                >
-                {Math.floor(movie.duration / 60)}h{(movie.duration % 60).toString().padStart(2, '0')}
-                </span>
-              )}
             </h1>
+
+            {/* DIRECTORS - GENRE - DURATION ON SAME LINE */}
+            {(directorNames.length > 0 || shouldShowDirectorPlaceholder || movie.duration) && (
+              <p className={MovieDetailUIConfig.directors.dropShadow} style={{
+                marginBottom: MovieDetailUIConfig.genre.marginBottom,
+                fontFamily: MovieDetailUIConfig.directors.fontFamily,
+                fontSize: MovieDetailUIConfig.directors.fontSize,
+                fontWeight: MovieDetailUIConfig.directors.fontWeight,
+              }}>
+                {/* Directors */}
+                {shouldShowDirectorPlaceholder && (
+                  <>
+                    <span className={MovieDetailUIConfig.directors.prefix.color}>
+                      {MovieDetailUIConfig.directors.prefix.text}{" "}
+                    </span>…
+                  </>
+                )}
+                {directorNames.length > 0 && (
+                  <>
+                    <span className={MovieDetailUIConfig.directors.prefix.color}>
+                      {MovieDetailUIConfig.directors.prefix.text}{" "}
+                    </span>
+                    <span className={MovieDetailUIConfig.directors.color}>
+                      {directorNames.join(", ")}
+                    </span>
+                  </>
+                )}
+
+                {/* Genre - show first genre only */}
+                {movie.genres && movie.genres.length > 0 && (
+                  <>
+                    <span style={{ margin: `0 ${MovieDetailUIConfig.genre.separator.length > 0 ? '0.25rem' : 0}` }}>
+                      {MovieDetailUIConfig.genre.separator}
+                    </span>
+                    <span className={MovieDetailUIConfig.genre.color}>
+                      {movie.genres[0]}
+                    </span>
+                  </>
+                )}
+
+                {/* Duration */}
+                {movie.duration && (
+                  <>
+                    <span style={{ margin: `0 ${MovieDetailUIConfig.genre.separator.length > 0 ? '0.25rem' : 0}` }}>
+                      {MovieDetailUIConfig.genre.separator}
+                    </span>
+                    <span className={MovieDetailUIConfig.duration.color}>
+                      {Math.floor(movie.duration / 60)}h{(movie.duration % 60).toString().padStart(2, '0')}
+                    </span>
+                  </>
+                )}
+              </p>
+            )}
 
             {/* TAGLINE */}
             {movie.tagline && (
