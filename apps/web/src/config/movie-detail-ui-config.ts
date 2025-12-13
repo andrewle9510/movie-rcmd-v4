@@ -42,4 +42,32 @@ export const MovieDetailUIConfig = {
       sides: "16px", // Distance from left/right edges of backdrop. Format: any CSS size value (e.g., "16px", "1rem", "20px")
     },
   },
+
+  // Header typography configuration
+  headers: {
+    title: {
+      fontFamily: "Montserrat", // Font family for movie title
+      fontSize: "2rem", // Size for movie title
+      fontWeight: "700", // Font weight for movie title (bold)
+      color: "text-white", // Text color for movie title
+      lineHeight: "1.2", // Line height for movie title
+      letterSpacing: "-0.02em", // Letter spacing for movie title
+    },
+    releaseYear: {
+      fontFamily: "Inter", // Font family for release year
+      fontSize: "1.25rem", // Size for release year
+      fontWeight: "400", // Font weight for release year (normal)
+      color: "text-gray-300", // Text color for release year
+      lineHeight: "1.4", // Line height for release year
+      letterSpacing: "", // Letter spacing for release year
+    },
+    duration: {
+      fontFamily: "Inter", // Font family for movie duration
+      fontSize: "1.25rem", // Size for movie duration
+      fontWeight: "400", // Font weight for movie duration (medium)
+      color: "text-gray-400", // Text color for movie duration
+      lineHeight: "1.4", // Line height for movie duration
+      letterSpacing: "", // Letter spacing for movie duration
+    },
+  },
 } as const;
