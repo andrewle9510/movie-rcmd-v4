@@ -22,6 +22,10 @@
 
 - **`movie-detail-ui-config.ts`**: Centralized configuration object defining visual constants: layout (backdrop height 500px, content negative margin -2rem overlap, gap 2.5rem between sections), backdrop (opacity 0-1, loadingOpacity 0.5, transition durations for loading and screenshot switching, bottom fade settings with intensity soft/medium/hard), poster (width 250px, position left/right, aspect ratio 2/3), carousel controls (icon size, padding, background colors for idle/hover, positioning from bottom/sides), and comprehensive typography settings for headers (title, release year, duration), tagline, and description. All values tweakable without component code modifications.
 
+  - **Sticky poster (Letterboxd-style)**: `MovieDetailUIConfig.poster.sticky` controls whether the poster column stays visible while scrolling on `md+` screens. It uses CSS `position: sticky` with a configurable `topOffset`.
+
+  - **Debug mock scroll content (temporary)**: `MovieDetailUIConfig.debug.mockLongContent` can add extra text-only paragraphs to force scrolling, useful to verify the sticky poster behavior during development.
+
 - **`movie-detail-backdrop-poster-config.ts`**: Configuration object mapping TMDB IDs to image override objects. For specific movies, define custom `posterFilepath` and/or `backdropFilepath` as TMDB filepaths. Overrides default main_poster/main_backdrop from database. Only applied when no screenshots available. Enables precise control over visual presentation for specific movies.
 
 - **`use-movie-detail.ts`**: Hook fetching individual movie data with dual query support. Detects movieId type: numeric = TMDB ID, alphanumeric = Convex ID. First checks MoviesProvider cache via useMoviesContext. If found in cache, returns immediately without Convex query (performance optimization). If not cached, queries Convex: `api.movies.getMovie` for Convex ID or `api.movies.getMovieByTmdbId` for TMDB ID. Uses useRef to maintain stable cached result across re-renders. Returns transformed movie via `transformMovieData()`, isLoading state, and error message.
@@ -69,6 +73,8 @@ The movie detail feature creates a comprehensive cinematic view of individual mo
 15. **Information Display**: Renders title with release year, duration and genres in styled tags using centralized typography config. Tagline rendered with configurable font style (italic/normal), size, and color. Synopsis paragraph uses optimized reading width and line height. Stats grid (2-4 columns based on screen size) showing rating (/10) and formatted release date.
 
 16. **Responsive Behavior**: Flex layout stacks vertically on mobile (flex-col) and horizontally on medium+ screens based on poster.position config. Poster width and info sections scale responsively.
+
+16.1. **Sticky Poster Behavior (md+)**: When `MovieDetailUIConfig.poster.sticky.enabled` is true, the poster column becomes sticky (pinned) within the viewport as the content column scrolls. The sticky top offset is configured via `MovieDetailUIConfig.poster.sticky.topOffset`.
 
 17. **Image Fallbacks**: If activePosterUrl unavailable, shows "No Poster" placeholder. If backdropUrl unavailable, shows muted background. Handles all image load states gracefully.
 

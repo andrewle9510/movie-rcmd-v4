@@ -65,6 +65,10 @@ export const MovieDetailUIConfig = {
     width: "250px", // Fixed width of the movie poster image
     position: PosterPosition.LEFT, // Controls poster position: 'left' places poster on left side, 'right' on right side
     aspectRatio: "2/3", // Standard movie poster aspect ratio (width:height)
+    sticky: {
+      enabled: true, // Keeps poster visible while scrolling on md+ screens
+      topOffset: "1.5rem", // Sticky offset from top of viewport. Format: any CSS size value (e.g., "24px", "1.5rem")
+    },
   },
 
   // Carousel controls for screenshot navigation
@@ -127,5 +131,13 @@ export const MovieDetailUIConfig = {
     color: "text-gray-100",
     lineHeight: "1.8", // Loose leading for readability
     maxWidth: "65ch", // Optimal reading width
+  },
+
+  // Temporary debug helpers for layout testing
+  debug: {
+    mockLongContent: {
+      enabled: false, // Adds extra text-only sections so the page can scroll (useful for testing sticky poster)
+      paragraphs: 18,
+    },
   },
 };

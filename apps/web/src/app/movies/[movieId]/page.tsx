@@ -190,6 +190,9 @@ export default function MovieDetailPage() {
     gradientClasses = `bg-gradient-to-t from-background ${viaClass} to-transparent`;
   }
 
+  const mockParagraph =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <style>{fadeInStyles}</style>
@@ -285,8 +288,19 @@ export default function MovieDetailPage() {
           {/* POSTER COLUMN */}
           {/* Fixed width to prevent shrinking/growing */}
           <div
-            className="shrink-0"
-            style={{ width: MovieDetailUIConfig.poster.width }}
+            className={`shrink-0 ${
+              MovieDetailUIConfig.poster.sticky?.enabled
+                ? "md:sticky md:self-start md:top-[var(--poster-sticky-top)] md:max-h-[calc(100vh-var(--poster-sticky-top))]"
+                : ""
+            }`}
+            style={
+              {
+                width: MovieDetailUIConfig.poster.width,
+                ...(MovieDetailUIConfig.poster.sticky?.enabled
+                  ? ({ "--poster-sticky-top": MovieDetailUIConfig.poster.sticky.topOffset } as React.CSSProperties)
+                  : {}),
+              } as React.CSSProperties & { "--poster-sticky-top"?: string }
+            }
           >
             <div
               className="relative rounded-lg overflow-hidden bg-muted shadow-2xl border-4 border-white/10"
@@ -389,6 +403,29 @@ export default function MovieDetailPage() {
                 {movie.description}
               </p>
             </div>
+
+            {/* TEMP: mock content for testing sticky poster */}
+            {MovieDetailUIConfig.debug?.mockLongContent?.enabled && (
+              <section className="pb-24" aria-label="Mock content">
+                <h2 className="text-white text-xl font-semibold mb-4">Mock Content</h2>
+                <div className="space-y-6" style={{ maxWidth: MovieDetailUIConfig.description.maxWidth }}>
+                  {Array.from({ length: MovieDetailUIConfig.debug.mockLongContent.paragraphs }).map((_, i) => (
+                    <p
+                      key={i}
+                      className={`${MovieDetailUIConfig.description.color}`}
+                      style={{
+                        fontFamily: MovieDetailUIConfig.description.fontFamily,
+                        fontSize: MovieDetailUIConfig.description.fontSize,
+                        fontWeight: MovieDetailUIConfig.description.fontWeight,
+                        lineHeight: MovieDetailUIConfig.description.lineHeight,
+                      }}
+                    >
+                      {mockParagraph}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
 
 
 
